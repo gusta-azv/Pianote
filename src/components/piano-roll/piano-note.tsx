@@ -5,14 +5,12 @@ type Props = {
   time: number; // ms
   left: number;
   width: number;
+  pxPerMs: number;
 };
 
-export const PianoNote = ({ note, time, left, width }: Props) => {
-  const PX_PER_SEC = 120;
-  const PX_PER_MS = PX_PER_SEC / 1000;
-
-  const y = (time - note.startMs) * PX_PER_MS;
-  const noteHeight = note.durationMs * PX_PER_MS;
+export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
+  const y = (time - note.startMs) * pxPerMs;
+  const noteHeight = note.durationMs * pxPerMs;
 
   return (
     <div

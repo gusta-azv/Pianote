@@ -1,6 +1,6 @@
 import { Note } from "./note";
 
-type Song = {
+export type Song = {
   title: string;
   artist: string;
   bpm: number;

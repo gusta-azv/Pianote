@@ -15,12 +15,18 @@ const COL_WIDTH = 100 / WHITE_KEYS_COUNT;
 const NOTE_WIDTH = COL_WIDTH * NOTE_WIDTH_RATIO;
 const NOTE_OFFSET = (COL_WIDTH - NOTE_WIDTH) / 2;
 
+// Test notes
 const testNotes: Note[] = [
   { midi: 60, startBeat: 0, durationBeat: 1 },
   { midi: 62, startBeat: 0.5, durationBeat: 0.75 },
   { midi: 64, startBeat: 1, durationBeat: 0.5 },
 ];
 const BPM = 120;
+
+// Piano roll settings
+const zoom = 1;
+const PX_PER_SEC = 120 * zoom;
+const PX_PER_MS = PX_PER_SEC / 1000;
 
 const renderNotes = prepareRenderNotes(testNotes, BPM);
 
@@ -65,6 +71,7 @@ export const PianoViewport = () => {
             time={time}
             left={left}
             width={NOTE_WIDTH}
+            pxPerMs={PX_PER_MS}
           />
         );
       })}

@@ -2,6 +2,7 @@ import { PianoKey } from "@/types/piano-key";
 import { RenderNote } from "@/types/render-note";
 import { beatToMs } from "./music";
 import { Note } from "@/types/note";
+import { PreparedPianoKey } from "@/types/prepared-piano-key";
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -35,7 +36,10 @@ export function getBlackKeyPosition(whiteIdx: number) {
   return (whiteIdx + 1) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
 }
 
-export function preparePianoKeys() {
+export function preparePianoKeys(): {
+  whiteKeys: PreparedPianoKey[];
+  blackKeys: PreparedPianoKey[];
+} {
   const keys = generatePianoKeys();
 
   let whiteIdx = -1;
@@ -58,7 +62,7 @@ export function preparePianoKeys() {
 
 const preparedKeys = preparePianoKeys();
 
-export function getKeyByMidi(midi: number) {
+export function getKeyByMidi(midi: number): PreparedPianoKey | undefined {
   return preparedKeys.whiteKeys.find((key) => key.midi === midi);
 }
 
