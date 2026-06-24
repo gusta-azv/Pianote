@@ -1,3 +1,3 @@
-type PianoRollSettings = {
+export type PianoRollSettings = {
   zoom: number;
 };

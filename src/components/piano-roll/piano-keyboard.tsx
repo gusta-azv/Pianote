@@ -1,11 +1,11 @@
 import {
   BLACK_KEY_WIDTH,
   getBlackKeyPosition,
-  preparatePianoKeys,
+  preparePianoKeys,
 } from "@/lib/piano";
 
 export const PianoKeyboard = () => {
-  const { whiteKeys, blackKeys } = preparatePianoKeys();
+  const { whiteKeys, blackKeys } = preparePianoKeys();
 
   return (
     <div className="relative">

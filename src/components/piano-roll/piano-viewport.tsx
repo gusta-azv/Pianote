@@ -3,6 +3,7 @@ import { prepareRenderNotes } from "@/lib/piano";
 import { createClock } from "@/lib/time/clock";
 import { PianoNote } from "./piano-note";
 import { useEffect, useState } from "react";
+import { Note } from "@/types/note";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
