@@ -1,4 +1,6 @@
 import { PianoKey } from "@/types/piano-key";
+import { RenderNote } from "@/types/render-note";
+import { beatToMs } from "./music";
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -55,4 +57,19 @@ export function preparatePianoKeys() {
 
 export function getKeyByMidi(midi: number) {
   return preparatePianoKeys().whiteKeys.find((key) => key.midi === midi);
+}
+
+export function prepareRenderNotes(notes: Note[], bpm: number): RenderNote[] {
+  return notes.map((note) => {
+    const key = getKeyByMidi(note.midi);
+
+    if (!key) throw new Error(`Midi ${note.midi} not found.`);
+
+    return {
+      midi: note.midi,
+      startMs: beatToMs(note.startBeat, bpm),
+      durationMs: beatToMs(note.durationBeat, bpm),
+      whiteIdx: key.whiteIdx,
+    };
+  });
 }

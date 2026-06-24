@@ -1,0 +1,3 @@
+type PianoRollSettings = {
+  zoom: number;
+};

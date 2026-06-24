@@ -1,5 +1,5 @@
 "use client";
-import { getKeyByMidi } from "@/lib/piano";
+import { prepareRenderNotes } from "@/lib/piano";
 import { createClock } from "@/lib/time/clock";
 import { PianoNote } from "./piano-note";
 import { useEffect, useState } from "react";
@@ -20,6 +20,8 @@ const testNotes: Note[] = [
   { midi: 64, startBeat: 1, durationBeat: 0.5 },
 ];
 const BPM = 120;
+
+const renderNotes = prepareRenderNotes(testNotes, BPM);
 
 const clock = createClock();
 export const PianoViewport = () => {
@@ -52,20 +54,16 @@ export const PianoViewport = () => {
       </div>
 
       {/* Notes */}
-      {testNotes.map((note) => {
-        const key = getKeyByMidi(note.midi);
-        if (!key) return null;
-
-        const left = (key.whiteIdx / WHITE_KEYS_COUNT) * 100 + NOTE_OFFSET;
+      {renderNotes.map((note) => {
+        const left = (note.whiteIdx / WHITE_KEYS_COUNT) * 100 + NOTE_OFFSET;
 
         return (
           <PianoNote
-            key={`${note.midi}`}
+            key={`${note.midi}-${note.startMs}`}
             note={note}
             time={time}
             left={left}
             width={NOTE_WIDTH}
-            bpm={BPM}
           />
         );
       })}
