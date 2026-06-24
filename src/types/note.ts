@@ -1,5 +1,5 @@
 type Note = {
   midi: number;
-  start: number; // ms
-  duration: number; // ms
+  startBeat: number; // example: 0, 0.5, 1
+  durationBeat: number; // example: 0.25 = sixteenth note
 };

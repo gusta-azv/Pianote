@@ -14,11 +14,12 @@ const COL_WIDTH = 100 / WHITE_KEYS_COUNT;
 const NOTE_WIDTH = COL_WIDTH * NOTE_WIDTH_RATIO;
 const NOTE_OFFSET = (COL_WIDTH - NOTE_WIDTH) / 2;
 
-const testNotes = [
-  { midi: 60, start: 0, duration: 2000 },
-  { midi: 62, start: 120, duration: 1800 },
-  { midi: 64, start: 200, duration: 1500 },
+const testNotes: Note[] = [
+  { midi: 60, startBeat: 0, durationBeat: 1 },
+  { midi: 62, startBeat: 0.5, durationBeat: 0.75 },
+  { midi: 64, startBeat: 1, durationBeat: 0.5 },
 ];
+const BPM = 120;
 
 const clock = createClock();
 export const PianoViewport = () => {
@@ -64,6 +65,7 @@ export const PianoViewport = () => {
             time={time}
             left={left}
             width={NOTE_WIDTH}
+            bpm={BPM}
           />
         );
       })}
