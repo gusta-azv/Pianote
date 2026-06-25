@@ -1,3 +1,4 @@
+import { VIEWPORT_HEIGHT } from "@/lib/constants";
 import { RenderNote } from "@/types/render-note";
 
 type Props = {
@@ -9,16 +10,18 @@ type Props = {
 };
 
 export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
-  const y = (time - note.startMs) * pxPerMs;
-  const noteHeight = note.durationMs * pxPerMs;
+  const height = note.durationMs * pxPerMs;
+  const y = (time - note.startMs) * pxPerMs - height;
+
+  const isHit = y + height >= VIEWPORT_HEIGHT && y <= VIEWPORT_HEIGHT;
 
   return (
     <div
-      className="absolute bg-emerald-500"
+      className={`absolute ${isHit ? "bg-emerald-300" : "bg-emerald-500"}`}
       style={{
         left: `${left}%`,
         width: `${width}%`,
-        height: `${noteHeight}px`,
+        height: `${height}px`,
         top: `${y}px`,
       }}
     />

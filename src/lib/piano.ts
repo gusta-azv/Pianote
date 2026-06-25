@@ -3,6 +3,7 @@ import { RenderNote } from "@/types/render-note";
 import { beatToMs } from "./music";
 import { Note } from "@/types/note";
 import { PreparedPianoKey } from "@/types/prepared-piano-key";
+import { Song, TimeSignature } from "@/types/song";
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -66,7 +67,13 @@ export function getKeyByMidi(midi: number): PreparedPianoKey | undefined {
   return preparedKeys.whiteKeys.find((key) => key.midi === midi);
 }
 
-export function prepareRenderNotes(notes: Note[], bpm: number): RenderNote[] {
+export function prepareRenderNotes(
+  notes: Note[],
+  bpm: number,
+  timeSignature: TimeSignature,
+): RenderNote[] {
+  const INTRO_BEATS = timeSignature.beatsPerBar; // Empty pickup measure
+
   return notes.map((note) => {
     const key = getKeyByMidi(note.midi);
 
@@ -74,7 +81,7 @@ export function prepareRenderNotes(notes: Note[], bpm: number): RenderNote[] {
 
     return {
       midi: note.midi,
-      startMs: beatToMs(note.startBeat, bpm),
+      startMs: beatToMs(note.startBeat + INTRO_BEATS, bpm),
       durationMs: beatToMs(note.durationBeat, bpm),
       whiteIdx: key.whiteIdx,
     };
