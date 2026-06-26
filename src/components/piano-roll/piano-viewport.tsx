@@ -8,12 +8,17 @@ import {
 import { PianoNote } from "./piano-note";
 import { useCallback, useState } from "react";
 import { Note } from "@/types/note";
-import { HIT_LINE_Y, VIEWPORT_HEIGHT } from "@/lib/constants";
+import {
+  HIT_LINE_Y,
+  PX_PER_MS,
+  VIEWPORT_HEIGHT,
+  viewportMs,
+} from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
 import { TimeSignature } from "@/types/song";
 import { getMusicTime } from "@/lib/playback";
-import { usePlayback } from "@/hooks/usePlayback";
 import { useAnimationFrame } from "@/hooks/useAnimationFrame";
+import { usePlaybackContext } from "@/app/contexts/playback-context";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
@@ -37,17 +42,11 @@ const timeSignature: TimeSignature = {
   beatUnit: 4,
 };
 
-const zoom = 1;
-const PX_PER_SEC = 120 * zoom;
-const PX_PER_MS = PX_PER_SEC / 1000;
-
-const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
-
 const renderNotes = prepareRenderNotes(testNotes, BPM, timeSignature);
 
 export const PianoViewport = () => {
   const [realTime, setRealTime] = useState(0);
-  const { playback, setPlayback, togglePlay } = usePlayback(viewportMs);
+  const { playback, setPlayback } = usePlaybackContext();
 
   const onFrame = useCallback((t: number) => setRealTime(t), []);
   useAnimationFrame(onFrame);
