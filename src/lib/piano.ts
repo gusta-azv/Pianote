@@ -4,8 +4,16 @@ import { beatToMs } from "./music";
 import { Note } from "@/types/note";
 import { PreparedPianoKey } from "@/types/prepared-piano-key";
 import { TimeSignature } from "@/types/song";
+import { NOTE_WIDTH_RATIO } from "./constants";
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+export const WHITE_KEYS_COUNT = 52;
+export const WHITE_KEY_WIDTH = 100 / WHITE_KEYS_COUNT;
+export const BLACK_KEYS_WIDTH = WHITE_KEY_WIDTH * 0.6;
+export const COL_WIDTH = 100 / WHITE_KEYS_COUNT;
+export const NOTE_WIDTH = COL_WIDTH * NOTE_WIDTH_RATIO;
+export const NOTE_OFFSET = (COL_WIDTH - NOTE_WIDTH) / 2;
 
 export function generatePianoKeys(): PianoKey[] {
   const keys: PianoKey[] = [];
@@ -28,13 +36,8 @@ export function generatePianoKeys(): PianoKey[] {
   return keys;
 }
 
-export const WHITE_KEY_COUNT = 52;
-
-export const WHITE_KEY_WIDTH = 100 / WHITE_KEY_COUNT;
-export const BLACK_KEY_WIDTH = WHITE_KEY_WIDTH * 0.6;
-
 export function getBlackKeyPosition(whiteIdx: number) {
-  return (whiteIdx + 1) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
+  return (whiteIdx + 1) * WHITE_KEY_WIDTH - BLACK_KEYS_WIDTH / 2;
 }
 
 export function preparePianoKeys(): {
@@ -64,7 +67,10 @@ export function preparePianoKeys(): {
 const preparedKeys = preparePianoKeys();
 
 export function getKeyByMidi(midi: number): PreparedPianoKey | undefined {
-  return preparedKeys.whiteKeys.find((key) => key.midi === midi);
+  return (
+    preparedKeys.whiteKeys.find((key) => key.midi === midi) ??
+    preparedKeys.blackKeys.find((key) => key.midi === midi)
+  );
 }
 
 export function prepareRenderNotes(
@@ -79,11 +85,17 @@ export function prepareRenderNotes(
 
     if (!key) throw new Error(`Midi ${note.midi} not found.`);
 
+    const left = key.isBlack
+      ? getBlackKeyPosition(key.whiteIdx)
+      : (key.whiteIdx / WHITE_KEYS_COUNT) * 100 + NOTE_OFFSET;
+
     return {
       midi: note.midi,
       startMs: beatToMs(note.startBeat + INTRO_BEATS, bpm),
       durationMs: beatToMs(note.durationBeat, bpm),
       whiteIdx: key.whiteIdx,
+      isBlack: key.isBlack,
+      left,
     };
   });
 }

@@ -3,4 +3,6 @@ export type RenderNote = {
   startMs: number;
   durationMs: number;
   whiteIdx: number;
+  isBlack: boolean;
+  left: number;
 };

@@ -1,6 +1,8 @@
 "use client";
 import {
+  BLACK_KEYS_WIDTH,
   getVisibleNotes,
+  NOTE_WIDTH,
   preparePianoKeys,
   prepareRenderNotes,
 } from "@/lib/piano";
@@ -15,23 +17,17 @@ import { TimeSignature } from "@/types/song";
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
 
-const WHITE_KEYS_COUNT = 52;
-const NOTE_WIDTH_RATIO = 0.85;
-
-const COL_WIDTH = 100 / WHITE_KEYS_COUNT;
-const NOTE_WIDTH = COL_WIDTH * NOTE_WIDTH_RATIO;
-const NOTE_OFFSET = (COL_WIDTH - NOTE_WIDTH) / 2;
-
 // Single test notes
 
 const testNotes: Note[] = [
-  { midi: 60, startBeat: 0, durationBeat: 4 }, // 1 compass, 1 beat
-  { midi: 62, startBeat: 0.5, durationBeat: 0.75 },
-  { midi: 64, startBeat: 1, durationBeat: 0.5 },
-  { midi: 60, startBeat: 12, durationBeat: 1 },
-  { midi: 62, startBeat: 13, durationBeat: 1 },
-  { midi: 62, startBeat: 14, durationBeat: 1 },
-  { midi: 62, startBeat: 15, durationBeat: 1 },
+  { midi: 60, startBeat: 0, durationBeat: 4 },
+  { midi: 64, startBeat: 0, durationBeat: 4 },
+  { midi: 67, startBeat: 0, durationBeat: 4 },
+  { midi: 70, startBeat: 0, durationBeat: 4 },
+  { midi: 70, startBeat: 16, durationBeat: 0.5 },
+  { midi: 70, startBeat: 16.5, durationBeat: 0.5 },
+  { midi: 70, startBeat: 17, durationBeat: 0.5 },
+  { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
 ];
 
 // Multiple test notes
@@ -125,15 +121,12 @@ export const PianoViewport = () => {
 
       {/* Notes */}
       {visibleNotes.map((note) => {
-        const left = (note.whiteIdx / WHITE_KEYS_COUNT) * 100 + NOTE_OFFSET;
-
         return (
           <PianoNote
             key={`${note.midi}-${note.startMs}`}
             note={note}
             time={cameraTime}
-            left={left}
-            width={NOTE_WIDTH}
+            width={note.isBlack ? BLACK_KEYS_WIDTH : NOTE_WIDTH}
             pxPerMs={PX_PER_MS}
           />
         );

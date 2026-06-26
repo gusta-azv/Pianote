@@ -1,5 +1,5 @@
 import {
-  BLACK_KEY_WIDTH,
+  BLACK_KEYS_WIDTH,
   getBlackKeyPosition,
   preparePianoKeys,
 } from "@/lib/piano";
@@ -26,7 +26,7 @@ export const PianoKeyboard = () => {
             key={key.midi}
             className="absolute top-0 h-[65%] bg-black"
             style={{
-              width: `${BLACK_KEY_WIDTH}%`,
+              width: `${BLACK_KEYS_WIDTH}%`,
               left: `${getBlackKeyPosition(key.whiteIdx)}%`,
             }}
           />

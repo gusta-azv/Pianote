@@ -4,12 +4,11 @@ import { RenderNote } from "@/types/render-note";
 type Props = {
   note: RenderNote;
   time: number; // ms
-  left: number;
   width: number;
   pxPerMs: number;
 };
 
-export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
+export const PianoNote = ({ note, time, width, pxPerMs }: Props) => {
   const height = note.durationMs * pxPerMs - NOTE_GAP_PX;
   const y = (time - note.startMs) * pxPerMs - height;
 
@@ -17,9 +16,17 @@ export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
 
   return (
     <div
-      className={`absolute rounded-sm ${isHit ? "bg-emerald-300" : "bg-emerald-500"}`}
+      className={`absolute rounded-sm ${
+        isHit
+          ? note.isBlack
+            ? "bg-emerald-600"
+            : "bg-emerald-300"
+          : note.isBlack
+            ? "bg-emerald-800"
+            : "bg-emerald-500"
+      }`}
       style={{
-        left: `${left}%`,
+        left: `${note.left}%`,
         width: `${width}%`,
         height: `${height}px`,
         top: `${y}px`,
