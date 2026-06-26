@@ -10,5 +10,6 @@ export type Song = {
   artist: string;
   bpm: number;
   timeSignature: TimeSignature;
+  barCount: number;
   notes: Note[];
 };

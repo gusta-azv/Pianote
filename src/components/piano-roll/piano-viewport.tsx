@@ -4,7 +4,7 @@ import { createClock } from "@/lib/time/clock";
 import { PianoNote } from "./piano-note";
 import { useEffect, useState } from "react";
 import { Note } from "@/types/note";
-import { VIEWPORT_HEIGHT } from "@/lib/constants";
+import { HIT_LINE_Y, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
 import { TimeSignature } from "@/types/song";
 
@@ -23,6 +23,7 @@ const testNotes: Note[] = [
   { midi: 60, startBeat: 0, durationBeat: 4 }, // 1 compass, 1 beat
   { midi: 62, startBeat: 0.5, durationBeat: 0.75 },
   { midi: 64, startBeat: 1, durationBeat: 0.5 },
+  { midi: 60, startBeat: 12, durationBeat: 1 },
 ];
 const BPM = 120;
 const timeSignature: TimeSignature = {
@@ -60,25 +61,31 @@ export const PianoViewport = () => {
 
   const cameraTime = time + LOOKAHEAD_MS;
 
+  const lastNoteMs = Math.max(
+    ...renderNotes.map((n) => n.startMs + n.durationMs),
+  );
+
+  const totalBars = Math.ceil(lastNoteMs / getMsPerBar(BPM, timeSignature)) + 1;
+
   return (
-    <div className="relative h-96 border overflow-hidden">
+    <div className="relative h-96 bg-zinc-800 overflow-hidden">
       <div
         className="absolute left-0 right-0 bottom-0 h-2 bg-zinc-700 z-10"
-        style={{ top: VIEWPORT_HEIGHT - 8 }}
+        style={{ top: HIT_LINE_Y }}
       />
       {/* Octaves division */}
       <div className="absolute inset-0 flex pointer-events-none">
         {OCTAVE_WHITE_COUNTS.map((count, index) => (
           <div
             key={index}
-            className="h-full border-r border-zinc-800"
+            className="h-full border-r border-zinc-700"
             style={{ flex: count }}
           />
         ))}
       </div>
 
       {/* Bar lines */}
-      {Array.from({ length: 40 }).map((_, i) => {
+      {Array.from({ length: totalBars }).map((_, i) => {
         const barStartMs = i * getMsPerBar(BPM, timeSignature);
         const y = (cameraTime - barStartMs) * PX_PER_MS;
         if (y < 0 || y > VIEWPORT_HEIGHT) return null;

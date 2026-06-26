@@ -1,4 +1,4 @@
-import { VIEWPORT_HEIGHT } from "@/lib/constants";
+import { HIT_LINE_Y } from "@/lib/constants";
 import { RenderNote } from "@/types/render-note";
 
 type Props = {
@@ -13,7 +13,7 @@ export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
   const height = note.durationMs * pxPerMs;
   const y = (time - note.startMs) * pxPerMs - height;
 
-  const isHit = y + height >= VIEWPORT_HEIGHT && y <= VIEWPORT_HEIGHT;
+  const isHit = y + height >= HIT_LINE_Y && y <= HIT_LINE_Y;
 
   return (
     <div
