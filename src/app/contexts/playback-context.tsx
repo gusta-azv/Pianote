@@ -7,19 +7,31 @@ type PlaybackContextType = {
   playback: Playback;
   setPlayback: React.Dispatch<React.SetStateAction<Playback>>;
   togglePlay: () => void;
+  skipForward: () => void;
+  skipBack: () => void;
 };
 
 type Props = {
   children: React.ReactNode;
   viewportMs: number;
+  lastNoteMs: number;
+  msPerBar: number;
 };
 
 const PlaybackContext = createContext<PlaybackContextType | null>(null);
 
-export function PlaybackProvider({ children, viewportMs }: Props) {
-  const { playback, setPlayback, togglePlay } = usePlayback(viewportMs);
+export function PlaybackProvider({
+  children,
+  viewportMs,
+  lastNoteMs,
+  msPerBar,
+}: Props) {
+  const { playback, setPlayback, togglePlay, skipForward, skipBack } =
+    usePlayback(viewportMs, lastNoteMs, msPerBar);
   return (
-    <PlaybackContext.Provider value={{ playback, setPlayback, togglePlay }}>
+    <PlaybackContext.Provider
+      value={{ playback, setPlayback, togglePlay, skipForward, skipBack }}
+    >
       {children}
     </PlaybackContext.Provider>
   );
