@@ -3,7 +3,7 @@ import { RenderNote } from "@/types/render-note";
 import { beatToMs } from "./music";
 import { Note } from "@/types/note";
 import { PreparedPianoKey } from "@/types/prepared-piano-key";
-import { Song, TimeSignature } from "@/types/song";
+import { TimeSignature } from "@/types/song";
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -85,5 +85,21 @@ export function prepareRenderNotes(
       durationMs: beatToMs(note.durationBeat, bpm),
       whiteIdx: key.whiteIdx,
     };
+  });
+}
+
+export function getVisibleNotes(
+  notes: RenderNote[],
+  cameraTime: number,
+  viewportMs: number,
+) {
+  return notes.filter((note) => {
+    const noteStart = note.startMs;
+    const noteEnd = note.startMs + note.durationMs;
+
+    const viewStart = cameraTime - viewportMs;
+    const viewEnd = cameraTime;
+
+    return noteEnd >= viewStart && noteStart <= viewEnd;
   });
 }

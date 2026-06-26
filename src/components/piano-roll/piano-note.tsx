@@ -1,4 +1,4 @@
-import { HIT_LINE_Y } from "@/lib/constants";
+import { HIT_LINE_Y, NOTE_GAP_PX } from "@/lib/constants";
 import { RenderNote } from "@/types/render-note";
 
 type Props = {
@@ -10,14 +10,14 @@ type Props = {
 };
 
 export const PianoNote = ({ note, time, left, width, pxPerMs }: Props) => {
-  const height = note.durationMs * pxPerMs;
+  const height = note.durationMs * pxPerMs - NOTE_GAP_PX;
   const y = (time - note.startMs) * pxPerMs - height;
 
   const isHit = y + height >= HIT_LINE_Y && y <= HIT_LINE_Y;
 
   return (
     <div
-      className={`absolute ${isHit ? "bg-emerald-300" : "bg-emerald-500"}`}
+      className={`absolute rounded-sm ${isHit ? "bg-emerald-300" : "bg-emerald-500"}`}
       style={{
         left: `${left}%`,
         width: `${width}%`,

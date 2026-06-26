@@ -1,5 +1,9 @@
 "use client";
-import { prepareRenderNotes } from "@/lib/piano";
+import {
+  getVisibleNotes,
+  preparePianoKeys,
+  prepareRenderNotes,
+} from "@/lib/piano";
 import { createClock } from "@/lib/time/clock";
 import { PianoNote } from "./piano-note";
 import { useEffect, useState } from "react";
@@ -18,25 +22,39 @@ const COL_WIDTH = 100 / WHITE_KEYS_COUNT;
 const NOTE_WIDTH = COL_WIDTH * NOTE_WIDTH_RATIO;
 const NOTE_OFFSET = (COL_WIDTH - NOTE_WIDTH) / 2;
 
-// Test notes
+// Single test notes
+
 const testNotes: Note[] = [
   { midi: 60, startBeat: 0, durationBeat: 4 }, // 1 compass, 1 beat
   { midi: 62, startBeat: 0.5, durationBeat: 0.75 },
   { midi: 64, startBeat: 1, durationBeat: 0.5 },
   { midi: 60, startBeat: 12, durationBeat: 1 },
+  { midi: 62, startBeat: 13, durationBeat: 1 },
+  { midi: 62, startBeat: 14, durationBeat: 1 },
+  { midi: 62, startBeat: 15, durationBeat: 1 },
 ];
+
+// Multiple test notes
+/*
+const { whiteKeys } = preparePianoKeys();
+const WHITE_MIDIS = whiteKeys.map((k) => k.midi);
+const testNotes = Array.from({ length: 2000 }).map((_, i) => ({
+  midi: WHITE_MIDIS[i % WHITE_MIDIS.length],
+  startBeat: i * 0.25,
+  durationBeat: 0.2,
+}));
+*/
+
 const BPM = 120;
 const timeSignature: TimeSignature = {
   beatsPerBar: 4,
   beatUnit: 4,
 };
 
-// Piano roll settings
 const zoom = 1;
 const PX_PER_SEC = 120 * zoom;
 const PX_PER_MS = PX_PER_SEC / 1000;
 
-// Bar lines
 const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
 const LOOKAHEAD_MS = viewportMs;
 
@@ -67,6 +85,8 @@ export const PianoViewport = () => {
 
   const totalBars = Math.ceil(lastNoteMs / getMsPerBar(BPM, timeSignature)) + 1;
 
+  const visibleNotes = getVisibleNotes(renderNotes, cameraTime, viewportMs);
+
   return (
     <div className="relative h-96 bg-zinc-800 overflow-hidden">
       <div
@@ -79,7 +99,11 @@ export const PianoViewport = () => {
           <div
             key={index}
             className="h-full border-r border-zinc-700"
-            style={{ flex: count }}
+            style={{
+              flex: count,
+              borderRight:
+                index === OCTAVE_WHITE_COUNTS.length - 1 ? "none" : undefined,
+            }}
           />
         ))}
       </div>
@@ -100,7 +124,7 @@ export const PianoViewport = () => {
       })}
 
       {/* Notes */}
-      {renderNotes.map((note) => {
+      {visibleNotes.map((note) => {
         const left = (note.whiteIdx / WHITE_KEYS_COUNT) * 100 + NOTE_OFFSET;
 
         return (
