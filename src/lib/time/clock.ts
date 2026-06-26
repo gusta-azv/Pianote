@@ -4,3 +4,5 @@ export function createClock(speed = 1) {
     getTime: () => (performance.now() - start) * speed,
   };
 }
+
+export const clock = createClock();

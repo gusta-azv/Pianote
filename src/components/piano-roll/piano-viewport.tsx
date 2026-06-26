@@ -3,22 +3,22 @@ import {
   BLACK_KEYS_WIDTH,
   getVisibleNotes,
   NOTE_WIDTH,
-  preparePianoKeys,
   prepareRenderNotes,
 } from "@/lib/piano";
-import { createClock } from "@/lib/time/clock";
 import { PianoNote } from "./piano-note";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Note } from "@/types/note";
 import { HIT_LINE_Y, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
 import { TimeSignature } from "@/types/song";
+import { getMusicTime } from "@/lib/playback";
+import { usePlayback } from "@/hooks/usePlayback";
+import { useAnimationFrame } from "@/hooks/useAnimationFrame";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
 
-// Single test notes
-
+// Test notes
 const testNotes: Note[] = [
   { midi: 60, startBeat: 0, durationBeat: 4 },
   { midi: 64, startBeat: 0, durationBeat: 4 },
@@ -30,17 +30,7 @@ const testNotes: Note[] = [
   { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
 ];
 
-// Multiple test notes
-/*
-const { whiteKeys } = preparePianoKeys();
-const WHITE_MIDIS = whiteKeys.map((k) => k.midi);
-const testNotes = Array.from({ length: 2000 }).map((_, i) => ({
-  midi: WHITE_MIDIS[i % WHITE_MIDIS.length],
-  startBeat: i * 0.25,
-  durationBeat: 0.2,
-}));
-*/
-
+// Song info
 const BPM = 120;
 const timeSignature: TimeSignature = {
   beatsPerBar: 4,
@@ -52,28 +42,18 @@ const PX_PER_SEC = 120 * zoom;
 const PX_PER_MS = PX_PER_SEC / 1000;
 
 const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
-const LOOKAHEAD_MS = viewportMs;
 
 const renderNotes = prepareRenderNotes(testNotes, BPM, timeSignature);
 
-const clock = createClock();
 export const PianoViewport = () => {
-  const [time, setTime] = useState(0);
+  const [realTime, setRealTime] = useState(0);
+  const { playback, setPlayback, togglePlay } = usePlayback(viewportMs);
 
-  useEffect(() => {
-    let raf: number;
+  const onFrame = useCallback((t: number) => setRealTime(t), []);
+  useAnimationFrame(onFrame);
 
-    const loop = () => {
-      setTime(clock.getTime());
-      raf = requestAnimationFrame(loop);
-    };
-
-    loop();
-
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const cameraTime = time + LOOKAHEAD_MS;
+  const musicTime = getMusicTime(playback, realTime);
+  const cameraTime = musicTime;
 
   const lastNoteMs = Math.max(
     ...renderNotes.map((n) => n.startMs + n.durationMs),
@@ -83,8 +63,25 @@ export const PianoViewport = () => {
 
   const visibleNotes = getVisibleNotes(renderNotes, cameraTime, viewportMs);
 
+  // Camera scroll
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+
+    setPlayback((prev) => {
+      if (prev.mode !== "pause") return prev;
+
+      return {
+        ...prev,
+        baseTime: Math.max(viewportMs, prev.baseTime - e.deltaY / PX_PER_MS),
+      };
+    });
+  };
+
   return (
-    <div className="relative h-96 bg-zinc-800 overflow-hidden">
+    <div
+      className="relative h-96 bg-zinc-800 overflow-hidden"
+      onWheel={handleWheel}
+    >
       <div
         className="absolute left-0 right-0 bottom-0 h-2 bg-zinc-700 z-10"
         style={{ top: HIT_LINE_Y }}
