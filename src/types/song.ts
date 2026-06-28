@@ -9,6 +9,7 @@ export type Song = {
   title: string;
   artist: string;
   bpm: number;
+  originalBpm: number;
   timeSignature: TimeSignature;
   // barCount: number;
   notes: Note[];

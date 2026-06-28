@@ -2,16 +2,18 @@
 import { PlaybackProvider } from "@/app/contexts/playback-context";
 import { PianoRoll } from "@/components/piano-roll/piano-roll";
 import { viewportMs } from "@/lib/constants";
-import { usePlaybackContext } from "@/app/contexts/playback-context";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { getMsPerBar } from "@/lib/music";
 import { prepareRenderNotes } from "@/lib/piano";
 import { Song } from "@/types/song";
+import { PlaybackControls } from "@/components/piano-roll/controls/playback-controls";
+import { BpmControl } from "@/components/piano-roll/controls/bpm-control";
+import { SongProvider } from "@/app/contexts/song-context";
 
 const song: Song = {
   title: "Song 1",
   artist: "Artist 1",
   bpm: 120,
+  originalBpm: 120,
   timeSignature: { beatsPerBar: 4, beatUnit: 4 },
   notes: [
     { midi: 60, startBeat: 0, durationBeat: 4 },
@@ -36,28 +38,12 @@ const lastNoteMs = Math.max(
 const msPerBar = getMsPerBar(song.bpm, song.timeSignature);
 
 function SongPageContent() {
-  const { playback, togglePlay, skipForward, skipBack } = usePlaybackContext();
-  const isPlaying = playback.mode === "play";
-
   return (
     <main className="flex flex-col items-center">
       <header className="grid grid-cols-3 w-full max-w-7xl mx-auto items-center px-6 py-2">
         <div className="flex items-center gap-8">
-          <button onClick={togglePlay} className="focus:outline-none">
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-          </button>
-          <div className="flex items-center gap-2">
-            <button onClick={skipBack} className="focus:outline-none">
-              <SkipBack size={24} />
-            </button>
-            <button onClick={skipForward} className="focus:outline-none">
-              <SkipForward size={24} />
-            </button>
-          </div>
-          <button className="flex flex-col items-center">
-            <span>120</span>
-            <span>BPM</span>
-          </button>
+          <PlaybackControls />
+          <BpmControl />
         </div>
         <div className="text-center">
           <h1 className="text-2xl">{song.title}</h1>
@@ -65,7 +51,7 @@ function SongPageContent() {
         </div>
         <div className="w-12" />
       </header>
-      <PianoRoll song={song} />
+      <PianoRoll />
     </main>
   );
 }
@@ -77,7 +63,9 @@ export default function SongPage() {
       lastNoteMs={lastNoteMs}
       msPerBar={msPerBar}
     >
-      <SongPageContent />
+      <SongProvider song={song}>
+        <SongPageContent />
+      </SongProvider>
     </PlaybackProvider>
   );
 }

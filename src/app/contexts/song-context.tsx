@@ -16,6 +16,7 @@ import { HIT_LINE_Y, NOTE_GAP_MS, PX_PER_MS } from "@/lib/constants";
 
 type SongContextType = {
   song: Song;
+  setSong: React.Dispatch<React.SetStateAction<Song>>;
   renderNotes: RenderNote[];
   musicTime: number;
   activeMidis: Set<number>;
@@ -28,9 +29,10 @@ type Props = {
   song: Song;
 };
 
-export function SongProvider({ children, song }: Props) {
+export function SongProvider({ children, song: initialSong }: Props) {
   const { playback } = usePlaybackContext();
   const [realTime, setRealTime] = useState(0);
+  const [song, setSong] = useState<Song>(initialSong);
 
   const onFrame = useCallback((t: number) => setRealTime(t), []);
   useAnimationFrame(onFrame);
@@ -48,7 +50,9 @@ export function SongProvider({ children, song }: Props) {
   );
 
   return (
-    <SongContext.Provider value={{ song, renderNotes, musicTime, activeMidis }}>
+    <SongContext.Provider
+      value={{ song, setSong, renderNotes, musicTime, activeMidis }}
+    >
       {children}
     </SongContext.Provider>
   );
