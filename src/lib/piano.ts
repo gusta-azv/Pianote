@@ -115,3 +115,21 @@ export function getVisibleNotes(
     return noteEnd >= viewStart && noteStart <= viewEnd;
   });
 }
+
+export function getActiveMidis(
+  renderNotes: RenderNote[],
+  musicTime: number,
+): Set<number> {
+  const active = new Set<number>();
+
+  for (const note of renderNotes) {
+    if (
+      musicTime >= note.startMs &&
+      musicTime < note.startMs + note.durationMs
+    ) {
+      active.add(note.midi);
+    }
+  }
+
+  return active;
+}

@@ -76,10 +76,13 @@ export const PianoViewport = () => {
     });
   };
 
+  const msPerBar = getMsPerBar(BPM, timeSignature);
+
   return (
     <div
-      className="relative h-96 bg-zinc-800 overflow-hidden"
+      className="relative bg-zinc-800 overflow-hidden"
       onWheel={handleWheel}
+      style={{ height: `${VIEWPORT_HEIGHT}px` }}
     >
       <div
         className="absolute left-0 right-0 bottom-0 h-2 bg-zinc-700 z-10"
@@ -109,9 +112,16 @@ export const PianoViewport = () => {
         return (
           <div
             key={i}
-            className="absolute left-0 right-0 h-px bg-zinc-700 pointer-events-none"
+            className="absolute left-0 right-0 pointer-events-none"
             style={{ top: `${y}px` }}
-          />
+          >
+            <div className="h-px bg-zinc-700" />
+            {i > 0 && (
+              <span className="absolute left-2 -top-5 text-sm text-zinc-500 select-none">
+                {i}
+              </span>
+            )}
+          </div>
         );
       })}
 

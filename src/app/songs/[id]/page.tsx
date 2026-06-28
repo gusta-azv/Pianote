@@ -54,7 +54,7 @@ function SongPageContent() {
             </button>
           </div>
           <button className="flex flex-col items-center">
-            <span>100{"%"}</span>
+            <span>120</span>
             <span>BPM</span>
           </button>
         </div>
