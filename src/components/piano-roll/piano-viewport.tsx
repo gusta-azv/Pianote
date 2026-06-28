@@ -1,13 +1,6 @@
 "use client";
-import {
-  BLACK_KEYS_WIDTH,
-  getVisibleNotes,
-  NOTE_WIDTH,
-  prepareRenderNotes,
-} from "@/lib/piano";
+import { BLACK_KEYS_WIDTH, getVisibleNotes, NOTE_WIDTH } from "@/lib/piano";
 import { PianoNote } from "./piano-note";
-import { useCallback, useState } from "react";
-import { Note } from "@/types/note";
 import {
   HIT_LINE_Y,
   PX_PER_MS,
@@ -15,44 +8,19 @@ import {
   viewportMs,
 } from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
-import { TimeSignature } from "@/types/song";
-import { getMusicTime } from "@/lib/playback";
-import { useAnimationFrame } from "@/hooks/useAnimationFrame";
 import { usePlaybackContext } from "@/app/contexts/playback-context";
+import { useSongContext } from "@/app/contexts/song-context";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
 
-// Test notes
-const testNotes: Note[] = [
-  { midi: 60, startBeat: 0, durationBeat: 4 },
-  { midi: 64, startBeat: 0, durationBeat: 4 },
-  { midi: 67, startBeat: 0, durationBeat: 4 },
-  { midi: 70, startBeat: 0, durationBeat: 4 },
-  { midi: 70, startBeat: 16, durationBeat: 0.5 },
-  { midi: 70, startBeat: 16.5, durationBeat: 0.5 },
-  { midi: 70, startBeat: 17, durationBeat: 0.5 },
-  { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
-];
-
-// Song info
-const BPM = 120;
-const timeSignature: TimeSignature = {
-  beatsPerBar: 4,
-  beatUnit: 4,
-};
-
-const renderNotes = prepareRenderNotes(testNotes, BPM, timeSignature);
-
 export const PianoViewport = () => {
-  const [realTime, setRealTime] = useState(0);
-  const { playback, setPlayback } = usePlaybackContext();
+  const { setPlayback } = usePlaybackContext();
+  const { song, renderNotes, musicTime } = useSongContext();
 
-  const onFrame = useCallback((t: number) => setRealTime(t), []);
-  useAnimationFrame(onFrame);
-
-  const musicTime = getMusicTime(playback, realTime);
   const cameraTime = musicTime;
+  const BPM = song.bpm;
+  const timeSignature = song.timeSignature;
 
   const lastNoteMs = Math.max(
     ...renderNotes.map((n) => n.startMs + n.durationMs),
@@ -75,8 +43,6 @@ export const PianoViewport = () => {
       };
     });
   };
-
-  const msPerBar = getMsPerBar(BPM, timeSignature);
 
   return (
     <div

@@ -5,3 +5,4 @@ export const NOTE_GAP_PX = 2; // defines the gap between notes on same column
 export const PX_PER_SEC = 120;
 export const PX_PER_MS = PX_PER_SEC / 1000;
 export const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
+export const NOTE_GAP_MS = NOTE_GAP_PX / PX_PER_MS;

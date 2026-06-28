@@ -6,33 +6,34 @@ import { usePlaybackContext } from "@/app/contexts/playback-context";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { getMsPerBar } from "@/lib/music";
 import { prepareRenderNotes } from "@/lib/piano";
-import { TimeSignature } from "@/types/song";
-import { Note } from "@/types/note";
+import { Song } from "@/types/song";
 
-const song = {
+const song: Song = {
   title: "Song 1",
   artist: "Artist 1",
+  bpm: 120,
+  timeSignature: { beatsPerBar: 4, beatUnit: 4 },
+  notes: [
+    { midi: 60, startBeat: 0, durationBeat: 4 },
+    { midi: 64, startBeat: 0, durationBeat: 4 },
+    { midi: 67, startBeat: 0, durationBeat: 4 },
+    { midi: 70, startBeat: 0, durationBeat: 4 },
+    { midi: 70, startBeat: 16, durationBeat: 0.5 },
+    { midi: 70, startBeat: 16.5, durationBeat: 0.5 },
+    { midi: 70, startBeat: 17, durationBeat: 0.5 },
+    { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
+  ],
 };
 
-// Temporary song info
-const BPM = 120;
-const timeSignature: TimeSignature = { beatsPerBar: 4, beatUnit: 4 };
-const testNotes: Note[] = [
-  { midi: 60, startBeat: 0, durationBeat: 4 },
-  { midi: 64, startBeat: 0, durationBeat: 4 },
-  { midi: 67, startBeat: 0, durationBeat: 4 },
-  { midi: 70, startBeat: 0, durationBeat: 4 },
-  { midi: 70, startBeat: 16, durationBeat: 0.5 },
-  { midi: 70, startBeat: 16.5, durationBeat: 0.5 },
-  { midi: 70, startBeat: 17, durationBeat: 0.5 },
-  { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
-];
-
-const renderNotes = prepareRenderNotes(testNotes, BPM, timeSignature);
+const renderNotes = prepareRenderNotes(
+  song.notes,
+  song.bpm,
+  song.timeSignature,
+);
 const lastNoteMs = Math.max(
   ...renderNotes.map((n) => n.startMs + n.durationMs),
 );
-const msPerBar = getMsPerBar(BPM, timeSignature);
+const msPerBar = getMsPerBar(song.bpm, song.timeSignature);
 
 function SongPageContent() {
   const { playback, togglePlay, skipForward, skipBack } = usePlaybackContext();
@@ -64,7 +65,7 @@ function SongPageContent() {
         </div>
         <div className="w-12" />
       </header>
-      <PianoRoll />
+      <PianoRoll song={song} />
     </main>
   );
 }

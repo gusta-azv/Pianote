@@ -119,13 +119,14 @@ export function getVisibleNotes(
 export function getActiveMidis(
   renderNotes: RenderNote[],
   musicTime: number,
+  gapMs = 0,
 ): Set<number> {
   const active = new Set<number>();
 
   for (const note of renderNotes) {
     if (
       musicTime >= note.startMs &&
-      musicTime < note.startMs + note.durationMs
+      musicTime < note.startMs + note.durationMs - gapMs
     ) {
       active.add(note.midi);
     }
