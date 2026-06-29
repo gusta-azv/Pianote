@@ -15,6 +15,7 @@ const song: Song = {
   bpm: 120,
   originalBpm: 120,
   timeSignature: { beatsPerBar: 4, beatUnit: 4 },
+  /*
   notes: [
     { midi: 60, startBeat: 0, durationBeat: 4 },
     { midi: 64, startBeat: 0, durationBeat: 4 },
@@ -25,6 +26,12 @@ const song: Song = {
     { midi: 70, startBeat: 17, durationBeat: 0.5 },
     { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
   ],
+  */
+  notes: Array.from({ length: 10000 }).map((_, i) => ({
+    midi: 21 + (i % 88),
+    startBeat: i * 0.2,
+    durationBeat: 0.2,
+  })),
 };
 
 const renderNotes = prepareRenderNotes(

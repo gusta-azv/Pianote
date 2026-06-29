@@ -1,3 +1,4 @@
+import { ARROW_KEY_STEP_MS } from "@/lib/constants";
 import { getMusicTime } from "@/lib/playback";
 import { clock } from "@/lib/time/clock";
 import { Playback } from "@/types/playback";
@@ -35,19 +36,6 @@ export function usePlayback(
     });
   }, []);
 
-  // Spacebar listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        togglePlay();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [togglePlay]);
-
   const skipForward = useCallback(() => {
     setPlayback((prev) => {
       const currentTime =
@@ -75,6 +63,61 @@ export function usePlayback(
       startRealTime: realTime,
     });
   }, [viewportMs]);
+
+  const move = useCallback(
+    (deltaMs: number) => {
+      setPlayback((prev) => {
+        if (prev.mode !== "pause") return prev;
+
+        return {
+          ...prev,
+          baseTime: Math.max(viewportMs, prev.baseTime + deltaMs),
+        };
+      });
+    },
+    [viewportMs],
+  );
+
+  const moveUp = useCallback(() => {
+    move(ARROW_KEY_STEP_MS);
+  }, [move]);
+
+  const moveDown = useCallback(() => {
+    move(-ARROW_KEY_STEP_MS);
+  }, [move]);
+
+  // Keyboard listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.code) {
+        case "Space":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          skipForward();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          skipBack();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          moveUp();
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          moveDown();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [togglePlay, skipForward, skipBack, moveUp, moveDown]);
 
   return { playback, setPlayback, togglePlay, skipForward, skipBack };
 }

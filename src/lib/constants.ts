@@ -7,3 +7,4 @@ export const PX_PER_MS = PX_PER_SEC / 1000;
 export const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
 export const NOTE_GAP_MS = NOTE_GAP_PX / PX_PER_MS;
 export const PERCENTAGES = [25, 50, 75, 100, 125, 150, 175]; // bpm percentages multiplier
+export const ARROW_KEY_STEP_MS = 50;
