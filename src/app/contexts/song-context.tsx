@@ -13,6 +13,7 @@ import { usePlaybackContext } from "./playback-context";
 import { useAnimationFrame } from "@/hooks/useAnimationFrame";
 import { getActiveMidis, prepareRenderNotes } from "@/lib/piano";
 import { HIT_LINE_Y, NOTE_GAP_MS, PX_PER_MS } from "@/lib/constants";
+import { useAudio } from "@/hooks/useAudio";
 
 type SongContextType = {
   song: Song;
@@ -48,6 +49,8 @@ export function SongProvider({ children, song: initialSong }: Props) {
     musicTime - HIT_LINE_Y / PX_PER_MS,
     NOTE_GAP_MS,
   );
+
+  useAudio(activeMidis);
 
   return (
     <SongContext.Provider

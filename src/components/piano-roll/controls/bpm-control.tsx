@@ -43,7 +43,7 @@ export const BpmControl = () => {
         <span className="text-sm">BPM</span>
       </button>
       {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg p-4 z-50 w-60">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg p-4 z-50 w-60 shadow-lg">
           <div className="flex justify-center items-center mb-3">
             <BpmInput
               value={song.bpm}
@@ -72,6 +72,7 @@ export const BpmControl = () => {
             className="grid text-xs"
             style={{
               gridTemplateColumns: `repeat(${PERCENTAGES.length}, 1fr)`,
+              marginInline: "-8px",
             }}
           >
             {PERCENTAGES.map((p, i) => (
