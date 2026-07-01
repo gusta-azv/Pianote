@@ -1,7 +1,10 @@
+import { PX_PER_SEC, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { Settings } from "@/types/settings";
 import { createContext, useContext, useState } from "react";
 
 type SettingsContextType = {
+  PX_PER_MS: number;
+  viewportMs: number;
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   toggleMetronome: () => void;
@@ -25,9 +28,13 @@ export function SettingsProvider({ children }: Props) {
       metronomeActive: !prev.metronomeActive,
     }));
 
+  const PX_PER_MS = (PX_PER_SEC * settings.zoom) / 1000;
+
+  const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
+
   return (
     <SettingsContext.Provider
-      value={{ settings, setSettings, toggleMetronome }}
+      value={{ settings, setSettings, toggleMetronome, PX_PER_MS, viewportMs }}
     >
       {children}
     </SettingsContext.Provider>

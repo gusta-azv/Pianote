@@ -1,21 +1,18 @@
 "use client";
 import { BLACK_KEYS_WIDTH, getVisibleNotes, NOTE_WIDTH } from "@/lib/piano";
 import { PianoNote } from "./piano-note";
-import {
-  HIT_LINE_Y,
-  PX_PER_MS,
-  VIEWPORT_HEIGHT,
-  viewportMs,
-} from "@/lib/constants";
+import { HIT_LINE_Y, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
 import { usePlaybackContext } from "@/app/contexts/playback-context";
 import { useSongContext } from "@/app/contexts/song-context";
+import { useSettingsContext } from "@/app/contexts/settings-context";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
 
 export const PianoViewport = () => {
   const { setPlayback } = usePlaybackContext();
+  const { viewportMs, PX_PER_MS } = useSettingsContext();
   const { song, renderNotes, musicTime } = useSongContext();
 
   const cameraTime = musicTime;
