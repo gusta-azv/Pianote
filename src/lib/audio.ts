@@ -1,6 +1,8 @@
 import * as Tone from "tone";
 
 let _sampler: Tone.Sampler | null = null;
+let _metronomeTick: Tone.Player | null = null;
+let _metronomeAccent: Tone.Player | null = null;
 
 export function getSampler(): Tone.Sampler | null {
   if (typeof window === "undefined") return null; // server
@@ -44,4 +46,40 @@ export function getSampler(): Tone.Sampler | null {
     }).toDestination();
   }
   return _sampler;
+}
+
+export function getMetronome() {
+  if (typeof window === "undefined") return null;
+
+  if (!_metronomeTick) {
+    _metronomeTick = new Tone.Player({
+      url: "/sounds/metronome/metronome_tick.wav",
+      autostart: false,
+    }).toDestination();
+    _metronomeAccent = new Tone.Player({
+      url: "/sounds/metronome/metronome_accent.wav",
+      autostart: false,
+    }).toDestination();
+  }
+
+  return {
+    tick: () => {
+      if (_metronomeTick?.loaded) _metronomeTick?.start();
+    },
+    accent: () => {
+      if (_metronomeAccent?.loaded) _metronomeAccent?.start();
+    },
+  };
+}
+
+export async function loadMetronome() {
+  if (typeof window === "undefined") return;
+  getMetronome();
+  await Tone.loaded(); // wait for all buffers to load
+}
+
+export async function loadSampler() {
+  if (typeof window === "undefined") return;
+  getSampler();
+  await Tone.loaded();
 }

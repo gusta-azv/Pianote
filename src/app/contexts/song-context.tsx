@@ -6,6 +6,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -14,6 +15,10 @@ import { useAnimationFrame } from "@/hooks/useAnimationFrame";
 import { getActiveMidis, prepareRenderNotes } from "@/lib/piano";
 import { HIT_LINE_Y, NOTE_GAP_MS, PX_PER_MS } from "@/lib/constants";
 import { useAudio } from "@/hooks/useAudio";
+import { useSettingsContext } from "./settings-context";
+import { getMsPerBeat } from "@/lib/music";
+import { useMetronome } from "@/hooks/useMetronome";
+import { loadMetronome, loadSampler } from "@/lib/audio";
 
 type SongContextType = {
   song: Song;
@@ -32,6 +37,7 @@ type Props = {
 
 export function SongProvider({ children, song: initialSong }: Props) {
   const { playback } = usePlaybackContext();
+  const { settings } = useSettingsContext();
   const [realTime, setRealTime] = useState(0);
   const [song, setSong] = useState<Song>(initialSong);
 
@@ -50,7 +56,20 @@ export function SongProvider({ children, song: initialSong }: Props) {
     NOTE_GAP_MS,
   );
 
+  const msPerBeat = getMsPerBeat(song.bpm);
+  useMetronome(
+    musicTime - HIT_LINE_Y / PX_PER_MS,
+    msPerBeat,
+    song.timeSignature.beatsPerBar,
+    settings.metronomeActive && playback.mode === "play",
+  );
+
   useAudio(activeMidis);
+
+  useEffect(() => {
+    loadMetronome();
+    loadSampler();
+  }, []);
 
   return (
     <SongContext.Provider
