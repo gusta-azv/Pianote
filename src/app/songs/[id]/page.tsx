@@ -80,14 +80,11 @@ const song: Song = {
   ],
 };
 
-const renderNotes = prepareRenderNotes(
-  song.notes,
-  song.bpm,
-  song.timeSignature,
+const renderNotes = prepareRenderNotes(song.notes, song.timeSignature);
+const lastNoteBeat = Math.max(
+  ...renderNotes.map((n) => n.startBeat + n.durationBeat),
 );
-const lastNoteMs = Math.max(
-  ...renderNotes.map((n) => n.startMs + n.durationMs),
-);
+const lastNoteMs = lastNoteBeat * (60_000 / song.bpm);
 const msPerBar = getMsPerBar(song.bpm, song.timeSignature);
 
 function SongPageContent() {
@@ -117,6 +114,7 @@ function ProvidersWithSettings({ children }: { children: React.ReactNode }) {
       viewportMs={viewportMs}
       lastNoteMs={lastNoteMs}
       msPerBar={msPerBar}
+      bpm={song.bpm}
     >
       <SongProvider song={song}>{children}</SongProvider>
     </PlaybackProvider>

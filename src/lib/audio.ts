@@ -78,7 +78,7 @@ export async function loadMetronome() {
   await Tone.loaded(); // wait for all buffers to load
 }
 
-export async function loadSampler() {
+export async function loadSampler(): Promise<void> {
   if (typeof window === "undefined") return;
   getSampler();
   await Tone.loaded();

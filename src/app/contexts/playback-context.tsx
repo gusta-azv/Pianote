@@ -16,6 +16,7 @@ type Props = {
   viewportMs: number;
   lastNoteMs: number;
   msPerBar: number;
+  bpm: number;
 };
 
 const PlaybackContext = createContext<PlaybackContextType | null>(null);
@@ -25,9 +26,10 @@ export function PlaybackProvider({
   viewportMs,
   lastNoteMs,
   msPerBar,
+  bpm,
 }: Props) {
   const { playback, setPlayback, togglePlay, skipForward, skipBack } =
-    usePlayback(viewportMs, lastNoteMs, msPerBar);
+    usePlayback(viewportMs, lastNoteMs, msPerBar, bpm);
   return (
     <PlaybackContext.Provider
       value={{ playback, setPlayback, togglePlay, skipForward, skipBack }}

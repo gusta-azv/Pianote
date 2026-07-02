@@ -2,80 +2,111 @@ import { ARROW_KEY_STEP_MS } from "@/lib/constants";
 import { getMusicTime } from "@/lib/playback";
 import { clock } from "@/lib/time/clock";
 import { Playback } from "@/types/playback";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function usePlayback(
   viewportMs: number,
   lastNoteMs: number,
   msPerBar: number,
+  bpm: number,
 ) {
+  const msPerBeat = 60_000 / bpm;
+  const viewportBeats = viewportMs / msPerBeat;
+  const bpmRef = useRef(bpm);
+  const viewportMsRef = useRef(viewportMs);
+  const lastNoteMsRef = useRef(lastNoteMs);
+
+  useEffect(() => {
+    bpmRef.current = bpm;
+  }, [bpm]);
+
+  useEffect(() => {
+    viewportMsRef.current = viewportMs;
+  }, [viewportMs]);
+  useEffect(() => {
+    lastNoteMsRef.current = lastNoteMs;
+  }, [lastNoteMs]);
+
   const [playback, setPlayback] = useState<Playback>({
     mode: "pause",
-    baseTime: viewportMs,
+    baseBeat: viewportBeats,
     startRealTime: 0,
   });
+
+  const getViewportBeats = useCallback(
+    () => viewportMsRef.current / (60_000 / bpmRef.current),
+    [],
+  );
 
   // Toggle play
   const togglePlay = useCallback(() => {
     const realTime = clock.getTime();
+    const msPerBeat = 60_000 / bpmRef.current;
 
     setPlayback((prev) => {
       if (prev.mode === "play") {
+        const currentMs = getMusicTime(prev, realTime, bpmRef.current);
         return {
           mode: "pause",
-          baseTime: getMusicTime(prev, realTime),
+          baseBeat: currentMs / msPerBeat,
           startRealTime: realTime,
         };
       }
-
       return {
         mode: "play",
-        baseTime: prev.baseTime,
+        baseBeat: prev.baseBeat,
         startRealTime: realTime,
       };
     });
   }, []);
 
   const skipForward = useCallback(() => {
+    const msPerBeat = 60_000 / bpmRef.current;
+    const beatsPerBar = msPerBar / msPerBeat;
+
     setPlayback((prev) => {
-      const currentTime =
+      const currentBeat =
         prev.mode === "play"
-          ? getMusicTime(prev, clock.getTime())
-          : prev.baseTime;
+          ? getMusicTime(prev, clock.getTime(), bpmRef.current) / msPerBeat
+          : prev.baseBeat;
 
-      const nextTimeMs = (Math.floor(currentTime / msPerBar) + 1) * msPerBar;
-
-      const realTime = clock.getTime();
+      const nextBeat =
+        (Math.floor(currentBeat / beatsPerBar) + 1) * beatsPerBar;
+      const maxBeat =
+        (lastNoteMsRef.current + viewportMsRef.current) / msPerBeat;
 
       return {
         mode: "play",
-        baseTime: Math.min(nextTimeMs, lastNoteMs + viewportMs),
-        startRealTime: realTime,
+        baseBeat: Math.min(nextBeat, maxBeat),
+        startRealTime: clock.getTime(),
       };
     });
-  }, [lastNoteMs, msPerBar, viewportMs]);
+  }, [msPerBar]);
 
   const skipBack = useCallback(() => {
     const realTime = clock.getTime();
     setPlayback({
       mode: "pause",
-      baseTime: viewportMs,
+      baseBeat: getViewportBeats(),
       startRealTime: realTime,
     });
-  }, [viewportMs]);
+  }, [getViewportBeats]);
 
   const move = useCallback(
     (deltaMs: number) => {
+      const msPerBeat = 60_000 / bpmRef.current;
       setPlayback((prev) => {
         if (prev.mode !== "pause") return prev;
-
         return {
           ...prev,
-          baseTime: Math.max(viewportMs, prev.baseTime + deltaMs),
+          baseBeat: Math.max(
+            getViewportBeats(),
+            prev.baseBeat + deltaMs / msPerBeat,
+          ),
         };
       });
     },
-    [viewportMs],
+    [getViewportBeats],
   );
 
   const moveUp = useCallback(() => {

@@ -1,6 +1,5 @@
 import { PianoKey } from "@/types/piano-key";
 import { RenderNote } from "@/types/render-note";
-import { beatToMs } from "./music";
 import { Note } from "@/types/note";
 import { PreparedPianoKey } from "@/types/prepared-piano-key";
 import { TimeSignature } from "@/types/song";
@@ -75,14 +74,12 @@ export function getKeyByMidi(midi: number): PreparedPianoKey | undefined {
 
 export function prepareRenderNotes(
   notes: Note[],
-  bpm: number,
   timeSignature: TimeSignature,
 ): RenderNote[] {
   const INTRO_BEATS = timeSignature.beatsPerBar; // Empty pickup measure
 
   return notes.map((note) => {
     const key = getKeyByMidi(note.midi);
-
     if (!key) throw new Error(`Midi ${note.midi} not found.`);
 
     const left = key.isBlack
@@ -91,8 +88,8 @@ export function prepareRenderNotes(
 
     return {
       midi: note.midi,
-      startMs: beatToMs(note.startBeat + INTRO_BEATS, bpm),
-      durationMs: beatToMs(note.durationBeat, bpm),
+      startBeat: note.startBeat + INTRO_BEATS,
+      durationBeat: note.durationBeat,
       whiteIdx: key.whiteIdx,
       isBlack: key.isBlack,
       left,
@@ -102,31 +99,31 @@ export function prepareRenderNotes(
 
 export function getVisibleNotes(
   notes: RenderNote[],
-  cameraTime: number,
-  viewportMs: number,
+  cameraBeat: number,
+  viewportBeats: number,
 ) {
   return notes.filter((note) => {
-    const noteStart = note.startMs;
-    const noteEnd = note.startMs + note.durationMs;
+    const viewStart = cameraBeat - viewportBeats;
+    const viewEnd = cameraBeat;
 
-    const viewStart = cameraTime - viewportMs;
-    const viewEnd = cameraTime;
-
-    return noteEnd >= viewStart && noteStart <= viewEnd;
+    return (
+      note.startBeat + note.durationBeat >= viewStart &&
+      note.startBeat <= viewEnd
+    );
   });
 }
 
 export function getActiveMidis(
   renderNotes: RenderNote[],
-  musicTime: number,
-  gapMs = 0,
+  musicBeat: number,
+  gapBeats = 0,
 ): Set<number> {
   const active = new Set<number>();
 
   for (const note of renderNotes) {
     if (
-      musicTime >= note.startMs &&
-      musicTime < note.startMs + note.durationMs - gapMs
+      musicBeat >= note.startBeat &&
+      musicBeat < note.startBeat + note.durationBeat - gapBeats
     ) {
       active.add(note.midi);
     }

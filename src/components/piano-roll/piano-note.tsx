@@ -3,14 +3,18 @@ import { RenderNote } from "@/types/render-note";
 
 type Props = {
   note: RenderNote;
-  time: number; // ms
+  time: number; // camera time, ms
   width: number;
   pxPerMs: number;
+  msPerBeat: number;
 };
 
-export const PianoNote = ({ note, time, width, pxPerMs }: Props) => {
-  const height = note.durationMs * pxPerMs - NOTE_GAP_PX;
-  const y = (time - note.startMs) * pxPerMs - height;
+export const PianoNote = ({ note, time, width, pxPerMs, msPerBeat }: Props) => {
+  const startMs = note.startBeat * msPerBeat;
+  const durationMs = note.durationBeat * msPerBeat;
+
+  const height = durationMs * pxPerMs - NOTE_GAP_PX;
+  const y = (time - startMs) * pxPerMs - height;
 
   const isHit = y + height >= HIT_LINE_Y && y <= HIT_LINE_Y;
 

@@ -1,9 +1,18 @@
 import { Playback } from "@/types/playback";
 
-export function getMusicTime(playback: Playback, realTime: number) {
+export function getMusicTime(
+  playback: Playback,
+  realTime: number,
+  bpm: number,
+) {
+  const msPerBeat = 60_000 / bpm;
+
   if (playback.mode === "pause") {
-    return playback.baseTime;
+    return playback.baseBeat * msPerBeat;
   }
 
-  return playback.baseTime + (realTime - playback.startRealTime);
+  const elapsedMs = realTime - playback.startRealTime;
+  const elapsedBeats = elapsedMs / msPerBeat;
+
+  return (playback.baseBeat + elapsedBeats) * msPerBeat;
 }

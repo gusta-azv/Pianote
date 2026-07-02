@@ -19,13 +19,17 @@ export const PianoViewport = () => {
   const BPM = song.bpm;
   const timeSignature = song.timeSignature;
 
-  const lastNoteMs = Math.max(
-    ...renderNotes.map((n) => n.startMs + n.durationMs),
+  const msPerBeat = 60_000 / song.bpm;
+  const viewportBeats = viewportMs / msPerBeat;
+
+  const lastNoteBeat = Math.max(
+    ...renderNotes.map((n) => n.startBeat + n.durationBeat),
   );
+  const totalBars =
+    Math.ceil(lastNoteBeat / (getMsPerBar(BPM, timeSignature) / msPerBeat)) + 1;
 
-  const totalBars = Math.ceil(lastNoteMs / getMsPerBar(BPM, timeSignature)) + 1;
-
-  const visibleNotes = getVisibleNotes(renderNotes, cameraTime, viewportMs);
+  const cameraBeat = cameraTime / msPerBeat;
+  const visibleNotes = getVisibleNotes(renderNotes, cameraBeat, viewportBeats);
 
   // Camera scroll
   const handleWheel = (e: React.WheelEvent) => {
@@ -36,7 +40,10 @@ export const PianoViewport = () => {
 
       return {
         ...prev,
-        baseTime: Math.max(viewportMs, prev.baseTime - e.deltaY / PX_PER_MS),
+        baseBeat: Math.max(
+          viewportBeats,
+          prev.baseBeat - e.deltaY / PX_PER_MS / msPerBeat,
+        ),
       };
     });
   };
@@ -92,11 +99,12 @@ export const PianoViewport = () => {
       {visibleNotes.map((note) => {
         return (
           <PianoNote
-            key={`${note.midi}-${note.startMs}`}
+            key={`${note.midi}-${note.startBeat}`}
             note={note}
             time={cameraTime}
             width={note.isBlack ? BLACK_KEYS_WIDTH : NOTE_WIDTH}
             pxPerMs={PX_PER_MS}
+            msPerBeat={msPerBeat}
           />
         );
       })}

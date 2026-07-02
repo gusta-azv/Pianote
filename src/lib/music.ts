@@ -14,13 +14,14 @@ export const getMsPerBar = (bpm: number, timeSignature: TimeSignature) => {
 
 // future function to get number of bars according to respective song
 export function getTotalBars(song: Song, renderNotes: RenderNote[]) {
-  const lastNoteMs = Math.max(
+  const msPerBeat = getMsPerBeat(song.bpm);
+  const msPerBar = getMsPerBar(song.bpm, song.timeSignature);
+
+  const lastNoteBeat = Math.max(
     0,
-    ...renderNotes.map((n) => n.startMs + n.durationMs),
+    ...renderNotes.map((n) => n.startBeat + n.durationBeat),
   );
+  const lastNoteMs = lastNoteBeat * msPerBeat;
 
-  const minimumBars =
-    Math.ceil(lastNoteMs / getMsPerBar(song.bpm, song.timeSignature)) + 1;
-
-  return Math.max(song.barCount, minimumBars);
+  return Math.ceil(lastNoteMs / msPerBar) + 1;
 }

@@ -13,7 +13,7 @@ import {
 import { usePlaybackContext } from "./playback-context";
 import { useAnimationFrame } from "@/hooks/useAnimationFrame";
 import { getActiveMidis, prepareRenderNotes } from "@/lib/piano";
-import { HIT_LINE_Y, NOTE_GAP_PX } from "@/lib/constants";
+import { HIT_LINE_Y, NOTE_GAP_PX, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { useAudio } from "@/hooks/useAudio";
 import { useSettingsContext } from "./settings-context";
 import { getMsPerBeat } from "@/lib/music";
@@ -37,29 +37,34 @@ type Props = {
 
 export function SongProvider({ children, song: initialSong }: Props) {
   const { playback } = usePlaybackContext();
-  const { settings, PX_PER_MS } = useSettingsContext();
+  const { settings, PX_PER_MS, viewportMs } = useSettingsContext();
   const [realTime, setRealTime] = useState(0);
   const [song, setSong] = useState<Song>(initialSong);
+  const [audioLoaded, setAudioLoaded] = useState(false);
 
   const onFrame = useCallback((t: number) => setRealTime(t), []);
   useAnimationFrame(onFrame);
 
   const renderNotes = useMemo(
-    () => prepareRenderNotes(song.notes, song.bpm, song.timeSignature),
+    () => prepareRenderNotes(song.notes, song.timeSignature),
     [song],
   );
 
-  const musicTime = getMusicTime(playback, realTime);
+  const musicTime = getMusicTime(playback, realTime, song.bpm);
 
-  const NOTE_GAP_MS = NOTE_GAP_PX / PX_PER_MS;
+  const msPerBeat = getMsPerBeat(song.bpm);
+  const musicBeat = musicTime / msPerBeat;
+  const viewportBeats = viewportMs / msPerBeat;
+  const NOTE_GAP_BEATS = NOTE_GAP_PX / PX_PER_MS / msPerBeat;
+  const hitLineOffsetBeats =
+    (VIEWPORT_HEIGHT - HIT_LINE_Y) / PX_PER_MS / msPerBeat;
 
   const activeMidis = getActiveMidis(
     renderNotes,
-    musicTime - HIT_LINE_Y / PX_PER_MS,
-    NOTE_GAP_MS,
+    musicBeat - viewportBeats + hitLineOffsetBeats,
+    NOTE_GAP_BEATS,
   );
 
-  const msPerBeat = getMsPerBeat(song.bpm);
   useMetronome(
     musicTime - HIT_LINE_Y / PX_PER_MS,
     msPerBeat,
@@ -67,11 +72,14 @@ export function SongProvider({ children, song: initialSong }: Props) {
     settings.metronomeActive && playback.mode === "play",
   );
 
-  useAudio(activeMidis);
+  useAudio(activeMidis, audioLoaded);
 
   useEffect(() => {
     loadMetronome();
     loadSampler();
+    Promise.all([loadSampler(), loadMetronome()]).then(() => {
+      setAudioLoaded(true);
+    });
   }, []);
 
   return (
