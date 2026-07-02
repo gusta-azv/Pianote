@@ -2,7 +2,7 @@ import { ARROW_KEY_STEP_MS } from "@/lib/constants";
 import { getMusicTime } from "@/lib/playback";
 import { clock } from "@/lib/time/clock";
 import { Playback } from "@/types/playback";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function usePlayback(
   viewportMs: number,
@@ -14,6 +14,16 @@ export function usePlayback(
     baseTime: viewportMs,
     startRealTime: 0,
   });
+
+  const viewportMsRef = useRef(viewportMs);
+  const lastNoteMsRef = useRef(lastNoteMs);
+
+  useEffect(() => {
+    viewportMsRef.current = viewportMs;
+  }, [viewportMs]);
+  useEffect(() => {
+    lastNoteMsRef.current = lastNoteMs;
+  }, [lastNoteMs]);
 
   // Toggle play
   const togglePlay = useCallback(() => {
@@ -49,34 +59,34 @@ export function usePlayback(
 
       return {
         mode: "play",
-        baseTime: Math.min(nextTimeMs, lastNoteMs + viewportMs),
+        baseTime: Math.min(
+          nextTimeMs,
+          lastNoteMsRef.current + viewportMsRef.current,
+        ),
         startRealTime: realTime,
       };
     });
-  }, [lastNoteMs, msPerBar, viewportMs]);
+  }, [msPerBar]);
 
   const skipBack = useCallback(() => {
     const realTime = clock.getTime();
     setPlayback({
       mode: "pause",
-      baseTime: viewportMs,
+      baseTime: viewportMsRef.current,
       startRealTime: realTime,
     });
-  }, [viewportMs]);
+  }, []);
 
-  const move = useCallback(
-    (deltaMs: number) => {
-      setPlayback((prev) => {
-        if (prev.mode !== "pause") return prev;
+  const move = useCallback((deltaMs: number) => {
+    setPlayback((prev) => {
+      if (prev.mode !== "pause") return prev;
 
-        return {
-          ...prev,
-          baseTime: Math.max(viewportMs, prev.baseTime + deltaMs),
-        };
-      });
-    },
-    [viewportMs],
-  );
+      return {
+        ...prev,
+        baseTime: Math.max(viewportMsRef.current, prev.baseTime + deltaMs),
+      };
+    });
+  }, []);
 
   const moveUp = useCallback(() => {
     move(ARROW_KEY_STEP_MS);
