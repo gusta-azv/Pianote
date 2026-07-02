@@ -40,6 +40,7 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const { settings, PX_PER_MS } = useSettingsContext();
   const [realTime, setRealTime] = useState(0);
   const [song, setSong] = useState<Song>(initialSong);
+  const [audioLoaded, setAudioLoaded] = useState(false);
 
   const onFrame = useCallback((t: number) => setRealTime(t), []);
   useAnimationFrame(onFrame);
@@ -67,11 +68,12 @@ export function SongProvider({ children, song: initialSong }: Props) {
     settings.metronomeActive && playback.mode === "play",
   );
 
-  useAudio(activeMidis);
+  useAudio(activeMidis, audioLoaded);
 
   useEffect(() => {
-    loadMetronome();
-    loadSampler();
+    Promise.all([loadSampler(), loadMetronome()]).then(() => {
+      setAudioLoaded(true);
+    });
   }, []);
 
   return (
