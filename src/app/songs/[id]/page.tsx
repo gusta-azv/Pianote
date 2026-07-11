@@ -6,32 +6,16 @@ import { BpmControl } from "@/components/piano-roll/controls/bpm-control";
 import { SongProvider } from "@/app/contexts/song-context";
 import { SongControls } from "@/components/piano-roll/controls/song-controls";
 import { SettingsProvider } from "@/app/contexts/settings-context";
+import { useEffect, useState } from "react";
+import { loadMidi } from "@/lib/midi";
 
+/*
 const song: Song = {
   title: "Afterthought",
   artist: "Fugazi",
   bpm: 115,
   originalBpm: 115,
   timeSignature: { beatsPerBar: 4, beatUnit: 4 },
-  /*
-  notes: [
-    { midi: 60, startBeat: 0, durationBeat: 4 },
-    { midi: 64, startBeat: 0, durationBeat: 4 },
-    { midi: 67, startBeat: 0, durationBeat: 4 },
-    { midi: 70, startBeat: 0, durationBeat: 4 },
-    { midi: 70, startBeat: 16, durationBeat: 0.5 },
-    { midi: 70, startBeat: 16.5, durationBeat: 0.5 },
-    { midi: 70, startBeat: 17, durationBeat: 0.5 },
-    { midi: 70, startBeat: 17.5, durationBeat: 0.5 },
-  ],
-  */
-  /*
-  notes: Array.from({ length: 10000 }).map((_, i) => ({
-    midi: 21 + (i % 88),
-    startBeat: i * 0.2,
-    durationBeat: 0.2,
-  })),
-  */
   notes: [
     { midi: 38, startBeat: 0, durationBeat: 4 },
     { midi: 50, startBeat: 0, durationBeat: 0.5 },
@@ -73,8 +57,9 @@ const song: Song = {
     { midi: 58, startBeat: 28, durationBeat: 4 },
   ],
 };
+*/
 
-function SongPageContent() {
+function SongPageContent({ song }: { song: Song }) {
   return (
     <main className="flex flex-col items-center">
       <header className="grid grid-cols-3 w-full max-w-7xl mx-auto items-center px-6 py-2">
@@ -95,10 +80,32 @@ function SongPageContent() {
 }
 
 export default function SongPage() {
+  const [song, setSong] = useState<Song | null>(null);
+
+  useEffect(() => {
+    loadMidi("/midi/Aphex Twin - Avril 14th.mid").then(({ notes, bpm }) => {
+      setSong({
+        title: "Avril 14th",
+        artist: "Aphex Twin",
+        bpm,
+        originalBpm: bpm,
+        timeSignature: { beatsPerBar: 4, beatUnit: 4 },
+        notes,
+      });
+    });
+  }, []);
+
+  if (!song)
+    return (
+      <div className="absolute inset-0 flex items-center justify-center text-3xl">
+        Loading...
+      </div>
+    );
+
   return (
     <SettingsProvider>
       <SongProvider song={song}>
-        <SongPageContent />
+        <SongPageContent song={song} />
       </SongProvider>
     </SettingsProvider>
   );

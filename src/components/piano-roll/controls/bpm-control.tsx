@@ -47,7 +47,9 @@ export const BpmControl = () => {
           <div className="flex justify-center items-center mb-3">
             <BpmInput
               value={song.bpm}
-              onChange={(value) => setSong((prev) => ({ ...prev, bpm: value }))}
+              onChange={(value) =>
+                setSong((prev) => ({ ...prev, bpm: Math.round(value) }))
+              }
             />
           </div>
           <div className="flex justify-between items-center">
