@@ -2,11 +2,15 @@ import { getSampler } from "@/lib/audio";
 import { useEffect, useRef } from "react";
 import * as Tone from "tone";
 
-export function useAudio(activeMidis: Set<number>, loaded: boolean) {
+export function useAudio(
+  activeMidis: Set<number>,
+  loaded: boolean,
+  playing: boolean,
+) {
   const prevMidisRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !playing) return;
 
     const sampler = getSampler();
     if (!sampler) return;
@@ -28,5 +32,5 @@ export function useAudio(activeMidis: Set<number>, loaded: boolean) {
     });
 
     prevMidisRef.current = activeMidis;
-  }, [activeMidis, loaded]);
+  }, [activeMidis, loaded, playing]);
 }

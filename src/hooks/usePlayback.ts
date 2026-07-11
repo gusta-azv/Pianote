@@ -17,6 +17,7 @@ export function usePlayback(
 
   const viewportMsRef = useRef(viewportMs);
   const lastNoteMsRef = useRef(lastNoteMs);
+  const msPerBarRef = useRef(msPerBar);
 
   useEffect(() => {
     viewportMsRef.current = viewportMs;
@@ -24,6 +25,9 @@ export function usePlayback(
   useEffect(() => {
     lastNoteMsRef.current = lastNoteMs;
   }, [lastNoteMs]);
+  useEffect(() => {
+    msPerBarRef.current = msPerBar;
+  }, [msPerBar]);
 
   // Toggle play
   const togglePlay = useCallback(() => {
@@ -53,7 +57,9 @@ export function usePlayback(
           ? getMusicTime(prev, clock.getTime())
           : prev.baseTime;
 
-      const nextTimeMs = (Math.floor(currentTime / msPerBar) + 1) * msPerBar;
+      const nextTimeMs =
+        (Math.floor(currentTime / msPerBarRef.current) + 1) *
+        msPerBarRef.current;
 
       const realTime = clock.getTime();
 
@@ -66,7 +72,7 @@ export function usePlayback(
         startRealTime: realTime,
       };
     });
-  }, [msPerBar]);
+  }, []);
 
   const skipBack = useCallback(() => {
     const realTime = clock.getTime();

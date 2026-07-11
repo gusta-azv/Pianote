@@ -20,8 +20,11 @@ export function useMetronome(
     if (currentBeat !== prevBeatRef.current) {
       prevBeatRef.current = currentBeat;
       const isAccent = currentBeat % beatsPerBar === 0;
-      if (isAccent) metronome.accent();
-      else metronome.tick();
+
+      try {
+        if (isAccent) metronome.accent();
+        else metronome.tick();
+      } catch {}
     }
   }, [active, beatsPerBar, msPerBeat, musicTime]);
 }

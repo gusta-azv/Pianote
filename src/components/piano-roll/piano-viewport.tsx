@@ -5,25 +5,28 @@ import { HIT_LINE_Y, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { getMsPerBar } from "@/lib/music";
 import { usePlaybackContext } from "@/app/contexts/playback-context";
 import { useSongContext } from "@/app/contexts/song-context";
-import { useSettingsContext } from "@/app/contexts/settings-context";
 
 // Notes from A0 to C8
 const OCTAVE_WHITE_COUNTS = [2, 7, 7, 7, 7, 7, 7, 7, 1];
 
 export const PianoViewport = () => {
   const { setPlayback } = usePlaybackContext();
-  const { viewportMs, PX_PER_MS } = useSettingsContext();
-  const { song, renderNotes, musicTime } = useSongContext();
+  const {
+    song,
+    renderNotes,
+    musicTime,
+    effectivePxPerMs,
+    effectiveViewportMs,
+    lastNoteMs,
+  } = useSongContext();
 
+  const PX_PER_MS = effectivePxPerMs;
+  const viewportMs = effectiveViewportMs;
   const cameraTime = musicTime;
-  const BPM = song.bpm;
   const timeSignature = song.timeSignature;
 
-  const lastNoteMs = Math.max(
-    ...renderNotes.map((n) => n.startMs + n.durationMs),
-  );
-
-  const totalBars = Math.ceil(lastNoteMs / getMsPerBar(BPM, timeSignature)) + 1;
+  const totalBars =
+    Math.ceil(lastNoteMs / getMsPerBar(song.originalBpm, timeSignature)) + 1;
 
   const visibleNotes = getVisibleNotes(renderNotes, cameraTime, viewportMs);
 
@@ -68,7 +71,8 @@ export const PianoViewport = () => {
 
       {/* Bar lines */}
       {Array.from({ length: totalBars }).map((_, i) => {
-        const barStartMs = i * getMsPerBar(BPM, timeSignature);
+        const msPerBar = getMsPerBar(song.originalBpm, timeSignature);
+        const barStartMs = i * msPerBar;
         const y = (cameraTime - barStartMs) * PX_PER_MS;
         if (y < 0 || y > VIEWPORT_HEIGHT) return null;
 

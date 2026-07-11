@@ -1,5 +1,4 @@
 "use client";
-import { usePlayback } from "@/hooks/usePlayback";
 import { Playback } from "@/types/playback";
 import { createContext, useContext } from "react";
 
@@ -13,21 +12,23 @@ type PlaybackContextType = {
 
 type Props = {
   children: React.ReactNode;
-  viewportMs: number;
-  lastNoteMs: number;
-  msPerBar: number;
+  playback: Playback;
+  setPlayback: React.Dispatch<React.SetStateAction<Playback>>;
+  togglePlay: () => void;
+  skipForward: () => void;
+  skipBack: () => void;
 };
 
 const PlaybackContext = createContext<PlaybackContextType | null>(null);
 
 export function PlaybackProvider({
   children,
-  viewportMs,
-  lastNoteMs,
-  msPerBar,
+  playback,
+  setPlayback,
+  togglePlay,
+  skipForward,
+  skipBack,
 }: Props) {
-  const { playback, setPlayback, togglePlay, skipForward, skipBack } =
-    usePlayback(viewportMs, lastNoteMs, msPerBar);
   return (
     <PlaybackContext.Provider
       value={{ playback, setPlayback, togglePlay, skipForward, skipBack }}

@@ -1,17 +1,11 @@
 "use client";
-import { PlaybackProvider } from "@/app/contexts/playback-context";
 import { PianoRoll } from "@/components/piano-roll/piano-roll";
-import { getMsPerBar } from "@/lib/music";
-import { prepareRenderNotes } from "@/lib/piano";
 import { Song } from "@/types/song";
 import { PlaybackControls } from "@/components/piano-roll/controls/playback-controls";
 import { BpmControl } from "@/components/piano-roll/controls/bpm-control";
 import { SongProvider } from "@/app/contexts/song-context";
 import { SongControls } from "@/components/piano-roll/controls/song-controls";
-import {
-  SettingsProvider,
-  useSettingsContext,
-} from "@/app/contexts/settings-context";
+import { SettingsProvider } from "@/app/contexts/settings-context";
 
 const song: Song = {
   title: "Afterthought",
@@ -80,16 +74,6 @@ const song: Song = {
   ],
 };
 
-const renderNotes = prepareRenderNotes(
-  song.notes,
-  song.bpm,
-  song.timeSignature,
-);
-const lastNoteMs = Math.max(
-  ...renderNotes.map((n) => n.startMs + n.durationMs),
-);
-const msPerBar = getMsPerBar(song.bpm, song.timeSignature);
-
 function SongPageContent() {
   return (
     <main className="flex flex-col items-center">
@@ -110,25 +94,12 @@ function SongPageContent() {
   );
 }
 
-function ProvidersWithSettings({ children }: { children: React.ReactNode }) {
-  const { viewportMs } = useSettingsContext();
-  return (
-    <PlaybackProvider
-      viewportMs={viewportMs}
-      lastNoteMs={lastNoteMs}
-      msPerBar={msPerBar}
-    >
-      <SongProvider song={song}>{children}</SongProvider>
-    </PlaybackProvider>
-  );
-}
-
 export default function SongPage() {
   return (
     <SettingsProvider>
-      <ProvidersWithSettings>
+      <SongProvider song={song}>
         <SongPageContent />
-      </ProvidersWithSettings>
+      </SongProvider>
     </SettingsProvider>
   );
 }
