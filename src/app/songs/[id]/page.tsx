@@ -9,6 +9,7 @@ import { SettingsProvider } from "@/app/contexts/settings-context";
 import { useEffect, useState } from "react";
 import { loadMidi } from "@/lib/midi";
 import { VolumeControl } from "@/components/piano-roll/controls/volume-control";
+import { TrackControl } from "@/components/piano-roll/controls/track-control";
 
 /*
 const song: Song = {
@@ -73,7 +74,8 @@ function SongPageContent({ song }: { song: Song }) {
           <h1 className="text-2xl">{song.title}</h1>
           <h2 className="text-zinc-400">{song.artist}</h2>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-8">
+          <TrackControl />
           <VolumeControl />
         </div>
       </header>
@@ -87,14 +89,14 @@ export default function SongPage() {
 
   useEffect(() => {
     loadMidi("/midi/W.A. Mozart - Eine kleine nachtmusik.mid").then(
-      ({ notes, bpm }) => {
+      ({ tracks, bpm }) => {
         setSong({
           title: "Eine kleine Nachtmusik",
           artist: "Mozart",
           bpm,
           originalBpm: bpm,
           timeSignature: { beatsPerBar: 4, beatUnit: 4 },
-          notes,
+          tracks,
         });
       },
     );

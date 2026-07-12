@@ -1,4 +1,4 @@
-import { Note } from "./note";
+import { Track } from "./track";
 
 export type TimeSignature = {
   beatsPerBar: number;
@@ -11,6 +11,5 @@ export type Song = {
   bpm: number;
   originalBpm: number;
   timeSignature: TimeSignature;
-  // barCount: number;
-  notes: Note[];
+  tracks: Track[];
 };

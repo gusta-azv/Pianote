@@ -5,4 +5,5 @@ export type RenderNote = {
   whiteIdx: number;
   isBlack: boolean;
   left: number;
+  color: string;
 };

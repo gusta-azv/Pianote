@@ -33,6 +33,8 @@ type SongContextType = {
   effectivePxPerMs: number;
   effectiveViewportMs: number;
   lastNoteMs: number;
+  activeTrackId: string;
+  setActiveTrackId: (id: string) => void;
 };
 
 const SongContext = createContext<SongContextType | null>(null);
@@ -48,6 +50,9 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const [realTime, setRealTime] = useState(0);
   const [song, setSong] = useState<Song>(initialSong);
   const [audioLoaded, setAudioLoaded] = useState(false);
+  const [activeTrackId, setActiveTrackId] = useState<string>(
+    () => initialSong.tracks[0]?.id ?? "",
+  );
 
   const autoZoom = Math.min(2, 120 / song.originalBpm);
   const effectivePxPerMs = PX_PER_MS * autoZoom;
@@ -63,8 +68,32 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const NOTE_GAP_MS = NOTE_GAP_PX / PX_PER_MS;
 
   const renderNotes = useMemo(
-    () => prepareRenderNotes(song.notes, song.originalBpm, song.timeSignature),
-    [song.notes, song.originalBpm, song.timeSignature],
+    () =>
+      song.tracks.flatMap((track) =>
+        prepareRenderNotes(
+          track.notes,
+          song.originalBpm,
+          song.timeSignature,
+          track.color,
+        ),
+      ),
+    [song.originalBpm, song.timeSignature, song.tracks],
+  );
+
+  // All no muted tracks
+  const allRenderNotes = useMemo(
+    () =>
+      song.tracks
+        .filter((t) => !t.muted)
+        .flatMap((track) =>
+          prepareRenderNotes(
+            track.notes,
+            song.originalBpm,
+            song.timeSignature,
+            track.color,
+          ),
+        ),
+    [song.originalBpm, song.timeSignature, song.tracks],
   );
 
   const lastNoteMs = useMemo(
@@ -82,7 +111,7 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const musicTime = getMusicTime(playback, realTime, speed);
 
   const activeMidis = getActiveMidis(
-    renderNotes,
+    allRenderNotes,
     musicTime - HIT_LINE_Y / effectivePxPerMs,
     NOTE_GAP_MS,
   );
@@ -164,6 +193,8 @@ export function SongProvider({ children, song: initialSong }: Props) {
           effectivePxPerMs,
           effectiveViewportMs,
           lastNoteMs,
+          activeTrackId,
+          setActiveTrackId,
         }}
       >
         {children}

@@ -16,20 +16,13 @@ export const PianoNote = ({ note, time, width, pxPerMs }: Props) => {
 
   return (
     <div
-      className={`absolute rounded-sm ${
-        isHit
-          ? note.isBlack
-            ? "bg-emerald-600"
-            : "bg-emerald-300"
-          : note.isBlack
-            ? "bg-emerald-800"
-            : "bg-emerald-500"
-      }`}
+      className={`absolute rounded-sm`}
       style={{
         left: `${note.left}%`,
         width: `${width}%`,
         height: `${height}px`,
         top: `${y}px`,
+        backgroundColor: isHit ? note.color + "99" : note.color,
       }}
     />
   );
