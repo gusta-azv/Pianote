@@ -19,7 +19,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useSettingsContext } from "./settings-context";
 import { getMsPerBar, getMsPerBeat } from "@/lib/music";
 import { useMetronome } from "@/hooks/useMetronome";
-import { loadMetronome, loadSampler } from "@/lib/audio";
+import { getSampler, loadMetronome, loadSampler } from "@/lib/audio";
 import { usePlayback } from "@/hooks/usePlayback";
 import { PlaybackProvider } from "./playback-context";
 import { clock } from "@/lib/time/clock";
@@ -132,6 +132,19 @@ export function SongProvider({ children, song: initialSong }: Props) {
       setAudioLoaded(true);
     });
   }, []);
+
+  // Control volume
+  useEffect(() => {
+    const sampler = getSampler();
+
+    if (!sampler) return;
+
+    if (settings.muted) {
+      sampler.volume.value = -Infinity;
+    } else {
+      sampler.volume.value = 20 * Math.log10(settings.volume / 100);
+    }
+  }, [settings.muted, settings.volume]);
 
   return (
     <PlaybackProvider

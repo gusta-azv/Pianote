@@ -10,6 +10,7 @@ type SettingsContextType = {
   toggleMetronome: () => void;
   zoomIn: () => void;
   zoomOut: () => void;
+  toggleMute: () => void;
 };
 
 type Props = {
@@ -22,6 +23,8 @@ export function SettingsProvider({ children }: Props) {
   const [settings, setSettings] = useState<Settings>({
     metronomeActive: false,
     zoom: 1,
+    volume: 50,
+    muted: false,
   });
 
   const toggleMetronome = () =>
@@ -42,6 +45,9 @@ export function SettingsProvider({ children }: Props) {
       zoom: Math.max(0.25, prev.zoom - 0.25),
     }));
 
+  const toggleMute = () =>
+    setSettings((prev) => ({ ...prev, muted: !prev.muted }));
+
   const PX_PER_MS = (PX_PER_SEC * settings.zoom) / 1000;
 
   const viewportMs = VIEWPORT_HEIGHT / PX_PER_MS;
@@ -56,6 +62,7 @@ export function SettingsProvider({ children }: Props) {
         viewportMs,
         zoomIn,
         zoomOut,
+        toggleMute,
       }}
     >
       {children}

@@ -8,6 +8,7 @@ import { SongControls } from "@/components/piano-roll/controls/song-controls";
 import { SettingsProvider } from "@/app/contexts/settings-context";
 import { useEffect, useState } from "react";
 import { loadMidi } from "@/lib/midi";
+import { VolumeControl } from "@/components/piano-roll/controls/volume-control";
 
 /*
 const song: Song = {
@@ -72,7 +73,9 @@ function SongPageContent({ song }: { song: Song }) {
           <h1 className="text-2xl">{song.title}</h1>
           <h2 className="text-zinc-400">{song.artist}</h2>
         </div>
-        <div className="w-12" />
+        <div className="flex justify-end">
+          <VolumeControl />
+        </div>
       </header>
       <PianoRoll />
     </main>
@@ -83,16 +86,18 @@ export default function SongPage() {
   const [song, setSong] = useState<Song | null>(null);
 
   useEffect(() => {
-    loadMidi("/midi/Aphex Twin - Avril 14th.mid").then(({ notes, bpm }) => {
-      setSong({
-        title: "Avril 14th",
-        artist: "Aphex Twin",
-        bpm,
-        originalBpm: bpm,
-        timeSignature: { beatsPerBar: 4, beatUnit: 4 },
-        notes,
-      });
-    });
+    loadMidi("/midi/W.A. Mozart - Eine kleine nachtmusik.mid").then(
+      ({ notes, bpm }) => {
+        setSong({
+          title: "Eine kleine Nachtmusik",
+          artist: "Mozart",
+          bpm,
+          originalBpm: bpm,
+          timeSignature: { beatsPerBar: 4, beatUnit: 4 },
+          notes,
+        });
+      },
+    );
   }, []);
 
   if (!song)
