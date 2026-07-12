@@ -7,7 +7,7 @@ import {
 
 export const PianoKeyboard = () => {
   const { whiteKeys, blackKeys } = preparePianoKeys();
-  const { activeMidis } = useSongContext();
+  const { activeMidis, activeMidiColors } = useSongContext();
 
   return (
     <div className="relative">
@@ -18,7 +18,12 @@ export const PianoKeyboard = () => {
         {whiteKeys.map((key) => (
           <div
             key={key.midi}
-            className={`h-40 border border-zinc-700 ${activeMidis.has(key.midi) ? "bg-emerald-300" : "bg-white"} `}
+            className="h-40 border border-zinc-700"
+            style={{
+              backgroundColor: activeMidis.has(key.midi)
+                ? activeMidiColors.get(key.midi)!.hit
+                : "white",
+            }}
           />
         ))}
       </div>
@@ -26,10 +31,13 @@ export const PianoKeyboard = () => {
         {blackKeys.map((key) => (
           <div
             key={key.midi}
-            className={`absolute top-0 h-[65%] ${activeMidis.has(key.midi) ? "bg-emerald-600" : "bg-black"}`}
+            className="absolute top-0 h-[65%] "
             style={{
               width: `${BLACK_KEYS_WIDTH}%`,
               left: `${getBlackKeyPosition(key.whiteIdx)}%`,
+              backgroundColor: activeMidis.has(key.midi)
+                ? activeMidiColors.get(key.midi)!.hit
+                : "black",
             }}
           />
         ))}

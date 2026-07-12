@@ -22,7 +22,7 @@ export const PianoNote = ({ note, time, width, pxPerMs }: Props) => {
         width: `${width}%`,
         height: `${height}px`,
         top: `${y}px`,
-        backgroundColor: isHit ? note.color + "99" : note.color,
+        backgroundColor: isHit ? note.hit : note.color,
       }}
     />
   );

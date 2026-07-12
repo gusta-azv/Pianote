@@ -13,7 +13,7 @@ import {
   useState,
 } from "react";
 import { useAnimationFrame } from "@/hooks/useAnimationFrame";
-import { getActiveMidis, prepareRenderNotes } from "@/lib/piano";
+import { getActiveMidis, isNoteActive, prepareRenderNotes } from "@/lib/piano";
 import { HIT_LINE_Y, NOTE_GAP_PX, VIEWPORT_HEIGHT } from "@/lib/constants";
 import { useAudio } from "@/hooks/useAudio";
 import { useSettingsContext } from "./settings-context";
@@ -30,6 +30,7 @@ type SongContextType = {
   renderNotes: RenderNote[];
   musicTime: number;
   activeMidis: Set<number>;
+  activeMidiColors: Map<number, { color: string; hit: string }>;
   effectivePxPerMs: number;
   effectiveViewportMs: number;
   lastNoteMs: number;
@@ -75,6 +76,9 @@ export function SongProvider({ children, song: initialSong }: Props) {
           song.originalBpm,
           song.timeSignature,
           track.color,
+          track.darkColor,
+          track.hit,
+          track.hitDark,
         ),
       ),
     [song.originalBpm, song.timeSignature, song.tracks],
@@ -91,6 +95,9 @@ export function SongProvider({ children, song: initialSong }: Props) {
             song.originalBpm,
             song.timeSignature,
             track.color,
+            track.darkColor,
+            track.hit,
+            track.hitDark,
           ),
         ),
     [song.originalBpm, song.timeSignature, song.tracks],
@@ -115,6 +122,19 @@ export function SongProvider({ children, song: initialSong }: Props) {
     musicTime - HIT_LINE_Y / effectivePxPerMs,
     NOTE_GAP_MS,
   );
+
+  const activeMidiColors = useMemo(() => {
+    const map = new Map<number, { color: string; hit: string }>();
+    const adjustedTime = musicTime - HIT_LINE_Y / effectivePxPerMs;
+
+    renderNotes.forEach((note) => {
+      if (isNoteActive(note, adjustedTime, NOTE_GAP_MS)) {
+        map.set(note.midi, { color: note.color, hit: note.hit });
+      }
+    });
+
+    return map;
+  }, [musicTime, renderNotes, effectivePxPerMs, NOTE_GAP_MS]);
 
   useMetronome(
     musicTime - HIT_LINE_Y / effectivePxPerMs,
@@ -190,6 +210,7 @@ export function SongProvider({ children, song: initialSong }: Props) {
           renderNotes,
           musicTime,
           activeMidis,
+          activeMidiColors,
           effectivePxPerMs,
           effectiveViewportMs,
           lastNoteMs,

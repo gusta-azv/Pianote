@@ -6,4 +6,5 @@ export type RenderNote = {
   isBlack: boolean;
   left: number;
   color: string;
+  hit: string;
 };

@@ -77,7 +77,10 @@ export function prepareRenderNotes(
   notes: Note[],
   bpm: number,
   timeSignature: TimeSignature,
-  color = "#10b981",
+  color: string,
+  darkColor: string,
+  hit: string,
+  hitDark: string,
 ): RenderNote[] {
   const INTRO_BEATS = timeSignature.beatsPerBar; // Empty pickup measure
 
@@ -97,7 +100,8 @@ export function prepareRenderNotes(
       whiteIdx: key.whiteIdx,
       isBlack: key.isBlack,
       left,
-      color,
+      color: key.isBlack ? darkColor : color,
+      hit: key.isBlack ? hitDark : hit,
     };
   });
 }
@@ -135,4 +139,15 @@ export function getActiveMidis(
   }
 
   return active;
+}
+
+export function isNoteActive(
+  note: RenderNote,
+  musicTime: number,
+  gapMs = 0,
+): boolean {
+  return (
+    musicTime >= note.startMs &&
+    musicTime < note.startMs + note.durationMs - gapMs
+  );
 }
