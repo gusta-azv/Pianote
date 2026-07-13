@@ -85,7 +85,7 @@ export function prepareRenderNotes(
 ): RenderNote[] {
   const INTRO_BEATS = timeSignature.beatsPerBar; // Empty pickup measure
 
-  return notes.map((note) => {
+  return notes.map((note, i) => {
     const key = getKeyByMidi(note.midi);
 
     if (!key) throw new Error(`Midi ${note.midi} not found.`);
@@ -104,6 +104,7 @@ export function prepareRenderNotes(
       color: key.isBlack ? darkColor : color,
       hit: key.isBlack ? hitDark : hit,
       trackId,
+      index: i,
     };
   });
 }

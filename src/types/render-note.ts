@@ -8,4 +8,5 @@ export type RenderNote = {
   color: string;
   hit: string;
   trackId: string;
+  index: number;
 };
