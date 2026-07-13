@@ -3,31 +3,12 @@ import { ChevronDown, Headphones, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export const TrackControl = () => {
-  const { song, setSong, activeTrackId, setActiveTrackId } = useSongContext();
+  const { song, activeTrackId, setActiveTrackId, toggleMute, toggleSolo } =
+    useSongContext();
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   const activeTrack = song.tracks.find((t) => t.id === activeTrackId);
-
-  const toggleMute = (trackId: string) => {
-    setSong((prev) => ({
-      ...prev,
-      tracks: prev.tracks.map((t) =>
-        t.id === trackId ? { ...t, muted: !t.muted } : t,
-      ),
-    }));
-  };
-
-  /*
-  const toggleSolo = (trackId: string) => {
-    setSong((prev) => ({
-      ...prev,
-      tracks: prev.tracks.map((t) =>
-        t.id === trackId ? { ...t, solo: !t.solo } : t,
-      ),
-    }));
-  };
-  */
 
   // Close popover window
   useEffect(() => {
@@ -88,7 +69,7 @@ export const TrackControl = () => {
                     <VolumeX size={18} className="transition-colors" />
                   )}
                 </button>
-                {/*}
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -105,7 +86,6 @@ export const TrackControl = () => {
                     <Headphones size={16} className="transition-colors" />
                   )}
                 </button>
-                {*/}
               </div>
             </div>
           ))}

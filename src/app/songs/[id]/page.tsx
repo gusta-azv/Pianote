@@ -88,10 +88,12 @@ export default function SongPage() {
   const [song, setSong] = useState<Song | null>(null);
 
   useEffect(() => {
-    loadMidi("/midi/Aphex Twin - Avril 14th.mid").then(({ tracks, bpm }) => {
+    loadMidi(
+      "/midi/Franz Liszt - La Campanella - Grandes Etudes de Paganini No. 3.mid",
+    ).then(({ tracks, bpm }) => {
       setSong({
-        title: "Avril 14th",
-        artist: "Aphex Twin",
+        title: "La Campanella",
+        artist: "Franz Liszt",
         bpm,
         originalBpm: bpm,
         timeSignature: { beatsPerBar: 4, beatUnit: 4 },

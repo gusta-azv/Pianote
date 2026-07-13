@@ -26,7 +26,7 @@ export const VolumeControl = () => {
           setSettings((prev) => ({ ...prev, volume: v, muted: v === 0 }))
         }
       >
-        <Slider.Track className="bg-zinc-300 relative grow rounded-full h-2">
+        <Slider.Track className="bg-zinc-700 relative grow rounded-full h-2">
           <Slider.Range className="absolute bg-emerald-500 h-full rounded-full" />
         </Slider.Track>
         <Slider.Thumb

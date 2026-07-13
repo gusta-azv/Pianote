@@ -9,6 +9,7 @@ export type Track = {
   hitDark: string;
   notes: Note[];
   muted: boolean;
+  solo: boolean;
   instrumentFamily: string;
   instrumentNumber: number;
 };

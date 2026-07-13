@@ -42,17 +42,29 @@ export async function loadMidi(
     hit: TRACK_COLORS[i % TRACK_COLORS.length].hit,
     hitDark: TRACK_COLORS[i % TRACK_COLORS.length].hitDark,
     muted: false,
+    solo: false,
     instrumentFamily: track.instrument.family,
     instrumentNumber: track.instrument.number,
     //Merge all notes from tracks with the same instrument
     notes:
       // Convert midi notes from all tracks to the Note format
       // ticks / ppq converts midi ticks to quarter notes (beats)
-      track.notes.map((note) => ({
-        midi: note.midi,
-        startBeat: note.ticks / midi.header.ppq,
-        durationBeat: note.durationTicks / midi.header.ppq,
-      })),
+      track.notes
+        .filter(
+          (note, i, arr) =>
+            // Remove duplicated notes with same midi and tick
+            arr.findIndex(
+              (n) =>
+                n.midi === note.midi &&
+                n.ticks === note.ticks &&
+                n.durationTicks === note.durationTicks,
+            ) === i,
+        )
+        .map((note) => ({
+          midi: note.midi,
+          startBeat: note.ticks / midi.header.ppq,
+          durationBeat: note.durationTicks / midi.header.ppq,
+        })),
   }));
 
   return { tracks, bpm };

@@ -93,10 +93,10 @@ export const PianoViewport = () => {
       })}
 
       {/* Notes */}
-      {visibleNotes.map((note) => {
+      {visibleNotes.map((note, i) => {
         return (
           <PianoNote
-            key={`${note.trackId}-${note.midi}-${note.startMs}`}
+            key={`${i}-${note.trackId}-${note.midi}-${note.startMs}`}
             note={note}
             time={cameraTime}
             width={note.isBlack ? BLACK_KEYS_WIDTH : NOTE_WIDTH}

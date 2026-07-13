@@ -23,6 +23,7 @@ import { getSampler, loadMetronome, loadSampler } from "@/lib/audio";
 import { usePlayback } from "@/hooks/usePlayback";
 import { PlaybackProvider } from "./playback-context";
 import { clock } from "@/lib/time/clock";
+import { Track } from "@/types/track";
 
 type SongContextType = {
   song: Song;
@@ -36,6 +37,8 @@ type SongContextType = {
   lastNoteMs: number;
   activeTrackId: string;
   setActiveTrackId: (id: string) => void;
+  toggleMute: (trackId: string) => void;
+  toggleSolo: (trackId: string) => void;
 };
 
 const SongContext = createContext<SongContextType | null>(null);
@@ -58,59 +61,81 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const autoZoom = Math.min(2, 120 / song.originalBpm);
   const effectivePxPerMs = PX_PER_MS * autoZoom;
   const effectiveViewportMs = VIEWPORT_HEIGHT / effectivePxPerMs;
-
-  const prevViewportMsRef = useRef(effectiveViewportMs);
-
-  const prevBpmRef = useRef(song.bpm);
-
   const msPerBeat = getMsPerBeat(song.originalBpm);
   const msPerBar = getMsPerBar(song.originalBpm, song.timeSignature);
-
   const NOTE_GAP_MS = NOTE_GAP_PX / PX_PER_MS;
+  const speed = song.bpm / song.originalBpm;
 
-  const renderNotes = useMemo(
-    () =>
-      song.tracks.flatMap((track) =>
-        prepareRenderNotes(
-          track.notes,
-          song.originalBpm,
-          song.timeSignature,
-          track.color,
-          track.darkColor,
-          track.hit,
-          track.hitDark,
-          track.id,
-        ),
+  const prevViewportMsRef = useRef(effectiveViewportMs);
+  const prevBpmRef = useRef(song.bpm);
+
+  // Helper
+  // Converts a track into renderable notes
+  const prepareTrackNotes = useCallback(
+    (track: Track) =>
+      prepareRenderNotes(
+        track.notes,
+        song.originalBpm,
+        song.timeSignature,
+        track.color,
+        track.darkColor,
+        track.hit,
+        track.hitDark,
+        track.id,
       ),
-    [song.originalBpm, song.timeSignature, song.tracks],
+    [song.originalBpm, song.timeSignature],
   );
 
-  // All no muted tracks
-  const allRenderNotes = useMemo(
-    () =>
-      song.tracks
-        .filter((t) => !t.muted)
-        .flatMap((track) =>
-          prepareRenderNotes(
-            track.notes,
-            song.originalBpm,
-            song.timeSignature,
-            track.color,
-            track.darkColor,
-            track.hit,
-            track.hitDark,
-            track.id,
-          ),
+  const renderNotes = useMemo(
+    () => song.tracks.flatMap(prepareTrackNotes),
+    [prepareTrackNotes, song.tracks],
+  );
+
+  const toggleSolo = (trackId: string) => {
+    setSong((prev) => ({
+      ...prev,
+      tracks: prev.tracks.map((t) =>
+        t.id === trackId ? { ...t, solo: !t.solo } : t,
+      ),
+    }));
+  };
+
+  const toggleMute = (trackId: string) => {
+    setSong((prev) => {
+      //"When muted, all soloed tracks are disabled
+      const hasSolo = prev.tracks.some((t) => t.solo);
+      return {
+        ...prev,
+        tracks: prev.tracks.map((t) =>
+          hasSolo
+            ? {
+                ...t,
+                solo: false,
+                muted: t.id === trackId ? !t.muted : t.muted,
+              }
+            : { ...t, muted: t.id === trackId ? !t.muted : t.muted },
         ),
-    [song.originalBpm, song.timeSignature, song.tracks],
+      };
+    });
+  };
+
+  const hasSolo = useMemo(() => song.tracks.some((t) => t.solo), [song.tracks]);
+
+  const audibleTracks = useMemo(
+    () => song.tracks.filter((t) => (hasSolo ? t.solo : !t.muted)),
+    [hasSolo, song.tracks],
+  );
+
+  // Render notes from audible tracks
+  const allRenderNotes = useMemo(
+    () => audibleTracks.flatMap(prepareTrackNotes),
+    [audibleTracks, prepareTrackNotes],
   );
 
   const lastNoteMs = useMemo(
     () => Math.max(...renderNotes.map((n) => n.startMs + n.durationMs)),
     [renderNotes],
   );
-
-  const speed = song.bpm / song.originalBpm;
 
   const { playback, setPlayback, togglePlay, skipForward, skipBack } =
     usePlayback(effectiveViewportMs, lastNoteMs, msPerBar, speed);
@@ -120,27 +145,28 @@ export function SongProvider({ children, song: initialSong }: Props) {
 
   const musicTime = getMusicTime(playback, realTime, speed);
 
+  const adjustedMusicTime = musicTime - HIT_LINE_Y / effectivePxPerMs;
+
   const activeMidis = getActiveMidis(
     allRenderNotes,
-    musicTime - HIT_LINE_Y / effectivePxPerMs,
+    adjustedMusicTime,
     NOTE_GAP_MS,
   );
 
   const activeMidiColors = useMemo(() => {
     const map = new Map<number, { color: string; hit: string }>();
-    const adjustedTime = musicTime - HIT_LINE_Y / effectivePxPerMs;
 
     renderNotes.forEach((note) => {
-      if (isNoteActive(note, adjustedTime, NOTE_GAP_MS)) {
+      if (isNoteActive(note, adjustedMusicTime, NOTE_GAP_MS)) {
         map.set(note.midi, { color: note.color, hit: note.hit });
       }
     });
 
     return map;
-  }, [musicTime, renderNotes, effectivePxPerMs, NOTE_GAP_MS]);
+  }, [renderNotes, adjustedMusicTime, NOTE_GAP_MS]);
 
   useMetronome(
-    musicTime - HIT_LINE_Y / effectivePxPerMs,
+    adjustedMusicTime,
     msPerBeat,
     song.timeSignature.beatsPerBar,
     settings.metronomeActive && playback.mode === "play",
@@ -219,6 +245,8 @@ export function SongProvider({ children, song: initialSong }: Props) {
           lastNoteMs,
           activeTrackId,
           setActiveTrackId,
+          toggleMute,
+          toggleSolo,
         }}
       >
         {children}

@@ -65,7 +65,7 @@ export const BpmControl = () => {
               setSong((prev) => ({ ...prev, bpm: bpmValues[index] }))
             }
           >
-            <Slider.Track className="bg-zinc-300 relative grow rounded-full h-2">
+            <Slider.Track className="bg-zinc-700 relative grow rounded-full h-2">
               <Slider.Range className="absolute bg-emerald-500 h-full rounded-full" />
             </Slider.Track>
             <Slider.Thumb className="block w-4 h-4 bg-emerald-500 rounded-full shadow cursor-pointer" />
