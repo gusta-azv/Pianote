@@ -8,6 +8,7 @@ export function usePlayback(
   viewportMs: number,
   lastNoteMs: number,
   msPerBar: number,
+  speed: number,
 ) {
   const [playback, setPlayback] = useState<Playback>({
     mode: "pause",
@@ -18,6 +19,7 @@ export function usePlayback(
   const viewportMsRef = useRef(viewportMs);
   const lastNoteMsRef = useRef(lastNoteMs);
   const msPerBarRef = useRef(msPerBar);
+  const speedRef = useRef(speed);
 
   useEffect(() => {
     viewportMsRef.current = viewportMs;
@@ -28,6 +30,9 @@ export function usePlayback(
   useEffect(() => {
     msPerBarRef.current = msPerBar;
   }, [msPerBar]);
+  useEffect(() => {
+    speedRef.current = speed;
+  });
 
   // Toggle play
   const togglePlay = useCallback(() => {
@@ -37,7 +42,7 @@ export function usePlayback(
       if (prev.mode === "play") {
         return {
           mode: "pause",
-          baseTime: getMusicTime(prev, realTime),
+          baseTime: getMusicTime(prev, realTime, speedRef.current),
           startRealTime: realTime,
         };
       }

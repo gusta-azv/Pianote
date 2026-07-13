@@ -108,13 +108,14 @@ export function SongProvider({ children, song: initialSong }: Props) {
     [renderNotes],
   );
 
+  const speed = song.bpm / song.originalBpm;
+
   const { playback, setPlayback, togglePlay, skipForward, skipBack } =
-    usePlayback(effectiveViewportMs, lastNoteMs, msPerBar);
+    usePlayback(effectiveViewportMs, lastNoteMs, msPerBar, speed);
 
   const onFrame = useCallback((t: number) => setRealTime(t), []);
   useAnimationFrame(onFrame);
 
-  const speed = song.bpm / song.originalBpm;
   const musicTime = getMusicTime(playback, realTime, speed);
 
   const activeMidis = getActiveMidis(

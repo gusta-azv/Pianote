@@ -88,18 +88,16 @@ export default function SongPage() {
   const [song, setSong] = useState<Song | null>(null);
 
   useEffect(() => {
-    loadMidi("/midi/W.A. Mozart - Eine kleine nachtmusik.mid").then(
-      ({ tracks, bpm }) => {
-        setSong({
-          title: "Eine kleine Nachtmusik",
-          artist: "Mozart",
-          bpm,
-          originalBpm: bpm,
-          timeSignature: { beatsPerBar: 4, beatUnit: 4 },
-          tracks,
-        });
-      },
-    );
+    loadMidi("/midi/Aphex Twin - Avril 14th.mid").then(({ tracks, bpm }) => {
+      setSong({
+        title: "Avril 14th",
+        artist: "Aphex Twin",
+        bpm,
+        originalBpm: bpm,
+        timeSignature: { beatsPerBar: 4, beatUnit: 4 },
+        tracks,
+      });
+    });
   }, []);
 
   if (!song)
