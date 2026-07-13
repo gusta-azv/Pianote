@@ -7,4 +7,5 @@ export type RenderNote = {
   left: number;
   color: string;
   hit: string;
+  trackId: string;
 };

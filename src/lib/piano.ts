@@ -81,6 +81,7 @@ export function prepareRenderNotes(
   darkColor: string,
   hit: string,
   hitDark: string,
+  trackId: string,
 ): RenderNote[] {
   const INTRO_BEATS = timeSignature.beatsPerBar; // Empty pickup measure
 
@@ -102,6 +103,7 @@ export function prepareRenderNotes(
       left,
       color: key.isBlack ? darkColor : color,
       hit: key.isBlack ? hitDark : hit,
+      trackId,
     };
   });
 }
