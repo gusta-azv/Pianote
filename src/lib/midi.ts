@@ -1,10 +1,11 @@
 import { Track } from "@/types/track";
 import { Midi } from "@tonejs/midi";
 import { TRACK_COLORS } from "./track-colors";
+import { TrackGroup } from "@/types/track-group";
 
 export async function loadMidi(
   url: string,
-): Promise<{ tracks: Track[]; bpm: number }> {
+): Promise<{ tracks: Track[]; trackGroups: TrackGroup[]; bpm: number }> {
   // Fetch midi file and parse it into a midi object
   const response = await fetch(url);
   const buffer = await response.arrayBuffer();
@@ -67,5 +68,25 @@ export async function loadMidi(
         })),
   }));
 
-  return { tracks, bpm };
+  const groupMap = new Map<string, TrackGroup>();
+
+  for (const track of tracks) {
+    const key = `${track.instrumentFamily}-${track.instrumentNumber}`;
+
+    if (!groupMap.has(key)) {
+      groupMap.set(key, {
+        id: `group-${groupMap.size}`,
+        name: track.name,
+        instrumentFamily: track.instrumentFamily,
+        instrumentNumber: track.instrumentNumber,
+        tracks: [],
+      });
+    }
+
+    groupMap.get(key)!.tracks.push(track);
+  }
+
+  const trackGroups = Array.from(groupMap.values());
+
+  return { tracks, trackGroups, bpm };
 }

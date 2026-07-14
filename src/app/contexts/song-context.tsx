@@ -35,10 +35,10 @@ type SongContextType = {
   effectivePxPerMs: number;
   effectiveViewportMs: number;
   lastNoteMs: number;
-  activeTrackId: string;
-  setActiveTrackId: (id: string) => void;
   toggleMute: (trackId: string) => void;
   toggleSolo: (trackId: string) => void;
+  activeTrackGroupId: string;
+  setActiveTrackGroupId: (id: string) => void;
 };
 
 const SongContext = createContext<SongContextType | null>(null);
@@ -54,8 +54,8 @@ export function SongProvider({ children, song: initialSong }: Props) {
   const [realTime, setRealTime] = useState(0);
   const [song, setSong] = useState<Song>(initialSong);
   const [audioLoaded, setAudioLoaded] = useState(false);
-  const [activeTrackId, setActiveTrackId] = useState<string>(
-    () => initialSong.tracks[0]?.id ?? "",
+  const [activeTrackGroupId, setActiveTrackGroupId] = useState(
+    () => initialSong.trackGroups[0]?.id ?? "",
   );
 
   const autoZoom = Math.min(2, 120 / song.originalBpm);
@@ -86,44 +86,62 @@ export function SongProvider({ children, song: initialSong }: Props) {
     [song.originalBpm, song.timeSignature],
   );
 
-  const renderNotes = useMemo(
-    () => song.tracks.flatMap(prepareTrackNotes),
-    [prepareTrackNotes, song.tracks],
+  const activeTrackGroup = useMemo(
+    () => song.trackGroups.find((g) => g.id === activeTrackGroupId),
+    [activeTrackGroupId, song.trackGroups],
   );
+
+  const renderNotes = useMemo(() => {
+    if (!activeTrackGroup) return [];
+
+    return activeTrackGroup.tracks.flatMap(prepareTrackNotes);
+  }, [activeTrackGroup, prepareTrackNotes]);
 
   const toggleSolo = (trackId: string) => {
     setSong((prev) => ({
       ...prev,
-      tracks: prev.tracks.map((t) =>
-        t.id === trackId ? { ...t, solo: !t.solo } : t,
-      ),
+      trackGroups: prev.trackGroups.map((group) => ({
+        ...group,
+        tracks: group.tracks.map((t) =>
+          t.id === trackId ? { ...t, solo: !t.solo } : t,
+        ),
+      })),
     }));
   };
 
   const toggleMute = (trackId: string) => {
     setSong((prev) => {
-      //"When muted, all soloed tracks are disabled
-      const hasSolo = prev.tracks.some((t) => t.solo);
+      // When muted, all soloed tracks are disabled
+      const allTracks = song.trackGroups.flatMap((g) => g.tracks);
+      const hasSolo = allTracks.some((t) => t.solo);
       return {
         ...prev,
-        tracks: prev.tracks.map((t) =>
-          hasSolo
-            ? {
-                ...t,
-                solo: false,
-                muted: t.id === trackId ? !t.muted : t.muted,
-              }
-            : { ...t, muted: t.id === trackId ? !t.muted : t.muted },
-        ),
+        trackGroups: prev.trackGroups.map((group) => ({
+          ...group,
+          tracks: group.tracks.map((t) =>
+            hasSolo
+              ? {
+                  ...t,
+                  solo: false,
+                  muted: t.id === trackId ? !t.muted : t.muted,
+                }
+              : { ...t, muted: t.id === trackId ? !t.muted : t.muted },
+          ),
+        })),
       };
     });
   };
 
-  const hasSolo = useMemo(() => song.tracks.some((t) => t.solo), [song.tracks]);
+  const allTracks = useMemo(
+    () => song.trackGroups.flatMap((g) => g.tracks),
+    [song.trackGroups],
+  );
+
+  const hasSolo = useMemo(() => allTracks.some((t) => t.solo), [allTracks]);
 
   const audibleTracks = useMemo(
-    () => song.tracks.filter((t) => (hasSolo ? t.solo : !t.muted)),
-    [hasSolo, song.tracks],
+    () => allTracks.filter((t) => (hasSolo ? t.solo : !t.muted)),
+    [allTracks, hasSolo],
   );
 
   // Render notes from audible tracks
@@ -243,10 +261,10 @@ export function SongProvider({ children, song: initialSong }: Props) {
           effectivePxPerMs,
           effectiveViewportMs,
           lastNoteMs,
-          activeTrackId,
-          setActiveTrackId,
           toggleMute,
           toggleSolo,
+          activeTrackGroupId,
+          setActiveTrackGroupId,
         }}
       >
         {children}

@@ -3,12 +3,20 @@ import { ChevronDown, Headphones, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export const TrackControl = () => {
-  const { song, activeTrackId, setActiveTrackId, toggleMute, toggleSolo } =
-    useSongContext();
+  const {
+    song,
+    activeTrackGroupId,
+    setActiveTrackGroupId,
+    toggleMute,
+    toggleSolo,
+  } = useSongContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const ref = useRef<HTMLDivElement>(null);
 
-  const activeTrack = song.tracks.find((t) => t.id === activeTrackId);
+  const activeTrackGroup = song.trackGroups.find(
+    (g) => g.id === activeTrackGroupId,
+  );
 
   // Close popover window
   useEffect(() => {
@@ -20,13 +28,30 @@ export const TrackControl = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isOpen]);
 
+  // Close groups
+  const toggleGroupExpanded = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+
+      return next;
+    });
+  };
+
   return (
     <div ref={ref} className="relative">
       <button
-        className="flex items-center justify-between bg-zinc-800 w-48 h-8 rounded-lg px-3 hover:bg-zinc-700 transition-colors duration-200"
+        className="flex items-center justify-between bg-zinc-800 w-48 h-8 rounded-lg px-3 hover:bg-zinc-700 transition-colors duration-200 select-none"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-sm truncate capitalize">{activeTrack?.name}</span>
+        <span className="text-sm truncate capitalize">
+          {activeTrackGroup?.name}
+        </span>
         <ChevronDown
           size={16}
           className={`text-zinc-300 transition-transform duration-150
@@ -35,64 +60,101 @@ export const TrackControl = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg p-3 z-50 w-max min-w-60 shadow-lg">
-          {song.tracks.map((track) => (
-            <div
-              key={track.id}
-              className="flex items-center justify-between px-2 gap-4 py-1.5 rounded hover:bg-zinc-700 cursor-pointer"
-              onClick={() => {
-                setActiveTrackId(track.id);
-                setIsOpen(false);
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: track.color }}
-                />
-                <span
-                  className={`text-sm capitalize ${track.muted ? "text-zinc-500 transition-colors" : "transition-colors"}`}
-                >
-                  {track.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleMute(track.id);
-                  }}
-                  className="text-xs text-zinc-400 hover:text-zinc-50 transition-colors"
-                >
-                  {track.muted ? (
-                    <VolumeX
-                      size={18}
-                      className="text-emerald-400 transition-colors"
-                    />
-                  ) : (
-                    <VolumeX size={18} className="transition-colors" />
-                  )}
-                </button>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg p-3 z-50 w-max min-w-80 shadow-lg">
+          {song.trackGroups.map((group) => {
+            const isExpanded = expandedGroups.has(group.id);
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSolo(track.id);
+            return (
+              <div key={group.id}>
+                <div
+                  className="flex items-center justify-between px-2 gap-4 py-1.5 rounded hover:bg-zinc-700 cursor-pointer"
+                  onClick={() => {
+                    setActiveTrackGroupId(group.id);
+                    setIsOpen(false);
                   }}
-                  className="text-xs text-zinc-400 hover:text-zinc-50 transition-colors"
                 >
-                  {track.solo ? (
-                    <Headphones
+                  <span className="capitalize">{group.name}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleGroupExpanded(group.id);
+                    }}
+                    className="p-2 -m-2"
+                  >
+                    <ChevronDown
                       size={16}
-                      className="text-emerald-400 transition-colors"
+                      className={`transition-transform duration-150
+                       ${isExpanded ? "rotate-180" : ""}`}
                     />
-                  ) : (
-                    <Headphones size={16} className="transition-colors" />
-                  )}
-                </button>
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <>
+                    {group.tracks.map((track) => (
+                      <div
+                        key={track.id}
+                        className="flex items-center justify-between px-4 py-1 gap-4"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: track.color }}
+                          />
+                          <span
+                            className={`text-sm capitalize select-none ${track.muted ? "text-zinc-500 transition-colors" : "transition-colors"}`}
+                          >
+                            {track.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleMute(track.id);
+                            }}
+                            className="text-xs text-zinc-400 hover:text-zinc-50 transition-colors"
+                          >
+                            {track.muted ? (
+                              <VolumeX
+                                size={18}
+                                className="text-emerald-400 transition-colors"
+                              />
+                            ) : (
+                              <VolumeX
+                                size={18}
+                                className="transition-colors"
+                              />
+                            )}
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSolo(track.id);
+                            }}
+                            className="text-xs text-zinc-400 hover:text-zinc-50 transition-colors"
+                          >
+                            {track.solo ? (
+                              <Headphones
+                                size={16}
+                                className="text-emerald-400 transition-colors"
+                              />
+                            ) : (
+                              <Headphones
+                                size={16}
+                                className="transition-colors"
+                              />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
